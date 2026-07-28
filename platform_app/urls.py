@@ -1,13 +1,13 @@
 from django.urls import path
 
-from . import billing_views, document_views, views
+from . import billing_views, document_views, public_views, views
 
 urlpatterns = [
     path("", views.home, name="home"),
     path("health/", views.health, name="health"),
     path("robots.txt", views.robots, name="robots"),
     path("sitemap.xml", views.sitemap, name="sitemap"),
-    path("social-card.png", views.social_card, name="social_card"),
+    path("social-card.png", public_views.social_card, name="social_card"),
     path("cadastro/", views.register, name="register"),
     path("entrar/", views.SignInView.as_view(), name="login"),
     path("sair/", views.SignOutView.as_view(), name="logout"),
