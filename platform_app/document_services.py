@@ -4,6 +4,7 @@ import os
 import re
 import unicodedata
 from contextlib import contextmanager
+from html import escape
 
 from django.conf import settings
 from django.core.files.base import ContentFile
@@ -90,7 +91,13 @@ def extract_uploaded_text(file_field, max_chars=100_000):
 
 
 def extract_placeholders(text):
-    return sorted({item.strip() for item in re.findall(r"\{\{\s*([^{}]+?)\s*\}\}", text) if item.strip()})
+    return sorted(
+        {
+            item.strip()
+            for item in re.findall(r"\{\{\s*([^{}]+?)\s*\}\}", text)
+            if item.strip()
+        }
+    )
 
 
 def process_template(template):
@@ -181,7 +188,11 @@ def generate_project_content(project):
 
 
 def _slug(value):
-    normalized = unicodedata.normalize("NFKD", value).encode("ascii", "ignore").decode("ascii")
+    normalized = (
+        unicodedata.normalize("NFKD", value)
+        .encode("ascii", "ignore")
+        .decode("ascii")
+    )
     return re.sub(r"[^a-z0-9]+", "_", normalized.lower()).strip("_")
 
 
@@ -189,7 +200,12 @@ def _replace_in_paragraph(paragraph, values):
     original = paragraph.text
     updated = original
     for key, value in values.items():
-        updated = re.sub(r"\{\{\s*" + re.escape(key) + r"\s*\}\}", str(value), updated, flags=re.I)
+        updated = re.sub(
+            r"\{\{\s*" + re.escape(key) + r"\s*\}\}",
+            str(value),
+            updated,
+            flags=re.I,
+        )
     if updated != original:
         paragraph.clear()
         paragraph.add_run(updated)
@@ -198,7 +214,11 @@ def _replace_in_paragraph(paragraph, values):
 
 
 def _template_values(project):
-    values = {str(key): value for key, value in project.field_values.items() if value not in (None, "")}
+    values = {
+        str(key): value
+        for key, value in project.field_values.items()
+        if value not in (None, "")
+    }
     values.update(
         {
             "titulo": project.content.get("title") or project.title,
@@ -278,6 +298,10 @@ def build_project_docx(project, watermark=False):
     return ContentFile(output.getvalue())
 
 
+def _pdf_markup(value):
+    return escape(str(value), quote=False).replace("\n", "<br/>")
+
+
 def build_project_pdf(project, watermark=False):
     output = io.BytesIO()
     story = []
@@ -291,18 +315,40 @@ def build_project_pdf(project, watermark=False):
     if project.logo:
         try:
             project.logo.open("rb")
-            story.append(PdfImage(project.logo, width=3 * cm, height=3 * cm, kind="proportional"))
-            story.append(Spacer(1, 10))
+            logo_data = io.BytesIO(project.logo.read())
         finally:
             project.logo.close()
-    story.append(Paragraph(project.content.get("title") or project.title, title_style))
+        story.append(
+            PdfImage(logo_data, width=3 * cm, height=3 * cm, kind="proportional")
+        )
+        story.append(Spacer(1, 10))
+    story.append(
+        Paragraph(
+            _pdf_markup(project.content.get("title") or project.title),
+            title_style,
+        )
+    )
     for warning in project.content.get("warnings", []):
-        story.append(Paragraph(f"<i>Atenção: {warning}</i>", styles["BodyText"]))
+        story.append(
+            Paragraph(
+                f"<i>Atenção: {_pdf_markup(warning)}</i>",
+                styles["BodyText"],
+            )
+        )
         story.append(Spacer(1, 8))
     for section in project.content.get("sections", []):
-        story.append(Paragraph(str(section.get("heading") or "Seção"), styles["Heading2"]))
-        body = str(section.get("body") or "—").replace("\n", "<br/>")
-        story.append(Paragraph(body, styles["BodyText"]))
+        story.append(
+            Paragraph(
+                _pdf_markup(section.get("heading") or "Seção"),
+                styles["Heading2"],
+            )
+        )
+        story.append(
+            Paragraph(
+                _pdf_markup(section.get("body") or "—"),
+                styles["BodyText"],
+            )
+        )
         story.append(Spacer(1, 12))
     footer = "AjudAI Docente"
     if watermark:
