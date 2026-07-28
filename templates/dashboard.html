@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+{% block title %}Painel — RN DocumentAI{% endblock %}
+{% block meta_robots %}noindex,nofollow{% endblock %}
+{% block content %}
+<div class="container py-5">
+  <div class="dashboard-heading">
+    <div>
+      <span class="section-kicker">PAINEL</span>
+      <h1>Olá, {{ user.professional_name }}</h1>
+      <p class="text-muted mb-0">Acompanhe créditos, configure o contexto acadêmico e gere seus documentos.</p>
+    </div>
+    <a class="btn btn-warning btn-lg" href="{% url 'generate_document' %}">Gerar Plano de Ensino</a>
+  </div>
+
+  <div class="row g-3 my-4">
+    <div class="col-md-4">
+      <div class="card metric-card p-4">
+        <span>Plano atual</span>
+        <strong>{{ user.subscription.plan.name }}</strong>
+        <a href="{% url 'subscription' %}">Gerenciar plano</a>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card metric-card p-4">
+        <span>Créditos disponíveis</span>
+        <strong>{{ user.wallet.balance }}</strong>
+        <small>Cada geração utiliza 2 créditos.</small>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card metric-card p-4">
+        <span>Limite diário</span>
+        <strong>{{ user.subscription.plan.daily_limit }}</strong>
+        <small>Créditos que podem ser usados por dia.</small>
+      </div>
+    </div>
+  </div>
+
+  {% if not onboarding_complete %}
+    <section class="card onboarding-card p-4 p-lg-5 mb-5" aria-labelledby="primeiros-passos">
+      <div class="d-flex flex-column flex-lg-row justify-content-between gap-3">
+        <div>
+          <span class="section-kicker">PRIMEIROS PASSOS</span>
+          <h2 id="primeiros-passos" class="h3">Prepare sua primeira geração</h2>
+          <p class="text-muted mb-0">Conclua o contexto essencial. O envio de fonte é opcional.</p>
+        </div>
+        <div class="progress-summary">
+          <strong>{{ onboarding_percent }}%</strong>
+          <span>concluído</span>
+        </div>
+      </div>
+      <progress class="onboarding-progress mt-3" aria-label="Progresso dos primeiros passos" value="{{ onboarding_percent }}" max="100">{{ onboarding_percent }}%</progress>
+      <div class="onboarding-grid mt-4">
+        {% for step in onboarding_steps %}
+          <a class="onboarding-step {% if step.done %}is-done{% endif %}" href="{{ step.url }}">
+            <span class="step-status" aria-hidden="true">{% if step.done %}✓{% else %}{{ forloop.counter }}{% endif %}</span>
+            <span>
+              <strong>{{ step.label }}{% if step.optional %} <small>(opcional)</small>{% endif %}</strong>
+              <small>{{ step.description }}</small>
+            </span>
+          </a>
+        {% endfor %}
+      </div>
+    </section>
+  {% endif %}
+
+  <section aria-labelledby="documentos-recentes">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+      <h2 id="documentos-recentes" class="h3 mb-0">Documentos recentes</h2>
+      <a href="{% url 'document_history' %}">Ver documentos e fontes</a>
+    </div>
+    <div class="list-group document-list mt-3">
+      {% for document in documents %}
+        <a class="list-group-item list-group-item-action" href="{% url 'document_detail' document.pk %}">
+          <span>
+            <strong>{{ document.title }}</strong>
+            <small>{{ document.code }} · {{ document.created_at|date:'d/m/Y H:i' }}</small>
+          </span>
+          <span aria-hidden="true">→</span>
+        </a>
+      {% empty %}
+        <div class="empty-state">
+          <strong>Nenhum documento gerado até agora.</strong>
+          <p>Cadastre o contexto acadêmico e gere seu primeiro Plano de Ensino.</p>
+          <a class="btn btn-primary" href="{% url 'academics' %}">Configurar dados acadêmicos</a>
+        </div>
+      {% endfor %}
+    </div>
+  </section>
+</div>
+{% endblock %}
