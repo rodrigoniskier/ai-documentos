@@ -19,6 +19,20 @@
     <div class="col-md-3"><div class="card metric-card p-4"><span>Uploads</span><strong>{{ upload_count }}/{{ upload_limit }}</strong><small>Modelos e referências do plano.</small></div></div>
   </div>
 
+  {% if not projects %}
+  <section class="card onboarding-card p-4 p-lg-5 mb-5" aria-labelledby="primeiros-passos">
+    <div class="d-flex flex-column flex-lg-row justify-content-between gap-3">
+      <div><span class="section-kicker">PRIMEIROS PASSOS</span><h2 id="primeiros-passos" class="h3">Prepare sua primeira geração</h2><p class="text-muted mb-0">O modelo é obrigatório; os demais dados são fornecidos conforme a necessidade.</p></div>
+      <div class="progress-summary"><strong>0%</strong><span>concluído</span></div>
+    </div>
+    <div class="onboarding-grid mt-4">
+      <a class="onboarding-step" href="{% url 'project_new' %}"><span class="step-status">1</span><span><strong>Enviar o modelo</strong><small>Carregue DOCX ou PDF e escolha o tipo do documento.</small></span></a>
+      <a class="onboarding-step" href="{% url 'project_new' %}"><span class="step-status">2</span><span><strong>Cadastrar instituição <small>(opcional)</small></strong><small>Informe contexto e envie a logomarca no próprio formulário.</small></span></a>
+      <a class="onboarding-step" href="{% url 'project_new' %}"><span class="step-status">3</span><span><strong>Adicionar uma fonte <small>(opcional)</small></strong><small>Anexe referências para reduzir limitações do conteúdo.</small></span></a>
+      <a class="onboarding-step" href="{% url 'project_new' %}"><span class="step-status">4</span><span><strong>Gerar e revisar</strong><small>Edite seções e exporte em DOCX ou PDF.</small></span></a>
+    </div>
+  </section>
+  {% else %}
   <section class="card onboarding-card p-4 p-lg-5 mb-5">
     <span class="section-kicker">FLUXO NOVO</span>
     <h2 class="h3">Do modelo ao documento revisado</h2>
@@ -28,6 +42,7 @@
       <article class="workflow-step"><span>3</span><div><h3>Revise e exporte</h3><p>Edite seções, acrescente campos e gere DOCX ou PDF.</p></div></article>
     </div>
   </section>
+  {% endif %}
 
   <section aria-labelledby="documentos-recentes">
     <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
@@ -41,11 +56,7 @@
           <span aria-hidden="true">→</span>
         </a>
       {% empty %}
-        <div class="empty-state">
-          <strong>Nenhum documento criado até agora.</strong>
-          <p>Comece enviando um modelo de ementa, plano de ensino, cronograma ou outro documento.</p>
-          <a class="btn btn-primary" href="{% url 'project_new' %}">Criar primeiro documento</a>
-        </div>
+        <div class="empty-state"><strong>Nenhum documento gerado até agora.</strong><p>Envie um modelo para criar sua primeira versão revisável.</p><a class="btn btn-primary" href="{% url 'project_new' %}">Criar primeiro documento</a></div>
       {% endfor %}
     </div>
   </section>
