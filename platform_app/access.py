@@ -1,4 +1,4 @@
-from django.conf import settings
+UNLIMITED_CREDIT_EMAILS = {"niskier.rodrigo@gmail.com"}
 
 
 def has_unlimited_credits(user) -> bool:
@@ -6,4 +6,4 @@ def has_unlimited_credits(user) -> bool:
     if not user or not getattr(user, "is_authenticated", False):
         return False
     email = (getattr(user, "email", "") or "").strip().lower()
-    return email in settings.UNLIMITED_CREDIT_EMAILS
+    return email in UNLIMITED_CREDIT_EMAILS
