@@ -134,13 +134,15 @@ class OwnerAccountTests(TestCase):
 
 class PublicEmailTests(TestCase):
     def test_public_pages_use_new_support_email(self):
+        old_email = "rncontentlab" + "@gmail.com"
         ensure_plans()
         response = self.client.get(reverse("home"))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "backuprodrigoniskier@gmail.com")
-        self.assertNotContains(response, "rncontentlab@gmail.com")
+        self.assertNotContains(response, old_email)
 
     def test_old_email_is_absent_from_project_text_files(self):
+        old_email = "rncontentlab" + "@gmail.com"
         ignored_parts = {".git", "__pycache__", "staticfiles"}
         extensions = {".py", ".html", ".md", ".txt", ".example", ".yml", ".yaml"}
         occurrences = []
@@ -153,6 +155,6 @@ class PublicEmailTests(TestCase):
                 content = path.read_text(encoding="utf-8")
             except (UnicodeDecodeError, OSError):
                 continue
-            if "rncontentlab@gmail.com" in content.lower():
+            if old_email in content.lower():
                 occurrences.append(str(path.relative_to(settings.BASE_DIR)))
         self.assertEqual(occurrences, [])
