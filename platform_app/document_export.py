@@ -10,6 +10,7 @@ from docx.shared import Cm, Pt
 
 from .document_conversion import convert_docx_bytes_to_pdf, libreoffice_available
 from .document_quality import audit_docx_structure, inspect_visual_fidelity
+from .template_exact_fields import fill_exact_adjacent_fields
 from .template_renderer import render_project_in_template, replace_paragraph_text
 
 
@@ -147,8 +148,11 @@ def _render_docx_bytes(project, watermark, *, compact=False):
         document, structural_changes = render_project_in_template(
             project, compact=compact
         )
+        adjacent_changes = fill_exact_adjacent_fields(
+            document, project, compact=compact
+        )
         placeholder_changes = _replace_placeholders(document, project)
-        if structural_changes + placeholder_changes == 0:
+        if structural_changes + adjacent_changes + placeholder_changes == 0:
             raise DocumentFidelityError(
                 "O modelo DOCX não possui marcadores nem blocos estruturais reconhecíveis. "
                 "Para evitar alterar a diagramação de forma insegura, o documento não foi reconstruído."
