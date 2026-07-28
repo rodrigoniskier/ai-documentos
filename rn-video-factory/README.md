@@ -14,21 +14,30 @@ Fábrica automatizada para produzir vídeos verticais de demonstração de proce
 O projeto está preparado como subdiretório de um monorepo. No Render, use o Blueprint `rn-video-factory/render.yaml` ou crie um Web Service Docker com:
 
 - **Root Directory:** `rn-video-factory`
-- **Dockerfile:** `rn-video-factory/Dockerfile`
+- **Dockerfile:** `./Dockerfile`
 - **Plano recomendado:** Standard, devido ao Chromium e à renderização de vídeo
 - **Disco persistente:** `/data`, 10 GB
 
-## Configuração obrigatória
+## Configuração inicial
 
-No Render, informe apenas:
+No fluxo de criação pelo Blueprint, informe somente:
 
-- `PUBLIC_BASE_URL`: URL pública do novo serviço;
-- `OPENAI_API_KEY`;
+- `OPENAI_API_KEY`.
+
+O `ADMIN_TOKEN` é gerado automaticamente. A URL pública e o endereço de retorno do YouTube são derivados automaticamente do hostname fornecido pelo Render.
+
+Depois que o serviço estiver no ar, adicione em **Environment**:
+
 - `GOOGLE_CLIENT_ID`;
-- `GOOGLE_CLIENT_SECRET`;
-- `GOOGLE_REDIRECT_URI`: `https://SEU-SERVICO.onrender.com/youtube/callback`.
+- `GOOGLE_CLIENT_SECRET`.
 
-O `ADMIN_TOKEN` pode ser gerado automaticamente pelo Blueprint.
+O endereço autorizado no Google será:
+
+```text
+https://SEU-SERVICO.onrender.com/youtube/callback
+```
+
+`PUBLIC_BASE_URL` e `GOOGLE_REDIRECT_URI` continuam aceitas como sobrescritas opcionais, mas não são necessárias no deploy padrão do Render.
 
 ## Primeira publicação
 
