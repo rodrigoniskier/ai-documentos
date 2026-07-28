@@ -1,0 +1,188 @@
+{% extends 'base.html' %}
+{% block title %}RN DocumentAI — Crie Planos de Ensino com IA{% endblock %}
+{% block meta_description %}Cadastre o contexto acadêmico, use fontes institucionais e gere Planos de Ensino editáveis em DOCX com apoio de inteligência artificial.{% endblock %}
+{% block structured_data %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "RN DocumentAI",
+  "url": "{{ site_url|escapejs }}",
+  "applicationCategory": "EducationalApplication",
+  "operatingSystem": "Web",
+  "inLanguage": "pt-BR",
+  "description": "Plataforma para professores do ensino superior criarem Planos de Ensino personalizados e editáveis com apoio de inteligência artificial.",
+  "offers": [
+    {"@type": "Offer", "name": "Gratuito", "price": "0", "priceCurrency": "BRL"},
+    {"@type": "Offer", "name": "Pro", "price": "19.90", "priceCurrency": "BRL"},
+    {"@type": "Offer", "name": "Ultra", "price": "49.90", "priceCurrency": "BRL"}
+  ],
+  "publisher": {"@type": "Organization", "name": "RN Content Lab"}
+}
+</script>
+{% endblock %}
+{% block content %}
+<section class="hero">
+  <div class="container py-5">
+    <div class="row align-items-center g-5">
+      <div class="col-lg-7">
+        <span class="eyebrow">Para professores do ensino superior</span>
+        <h1>Seu Plano de Ensino começa com o contexto certo.</h1>
+        <p class="lead mt-3">Cadastre instituição, curso, disciplina e fontes uma vez. Gere uma primeira versão estruturada, baixe em DOCX e faça a revisão docente.</p>
+        <div class="mt-4 d-flex flex-wrap gap-2">
+          <a class="btn btn-warning btn-lg" href="{% url 'register' %}">Começar com 5 créditos grátis</a>
+          <a class="btn btn-outline-light btn-lg" href="#como-funciona">Ver como funciona</a>
+        </div>
+        <div class="trust-row mt-4" role="list" aria-label="Informações principais">
+          <span class="trust-chip" role="listitem">Sem cartão no plano Gratuito</span>
+          <span class="trust-chip" role="listitem">DOCX editável</span>
+          <span class="trust-chip" role="listitem">Arquivos privados</span>
+        </div>
+      </div>
+      <div class="col-lg-5">
+        <div class="product-preview" role="img" aria-label="Prévia de um Plano de Ensino editável no RN DocumentAI">
+          <div class="preview-topbar"><span></span><span></span><span></span><strong>RN DocumentAI</strong></div>
+          <div class="preview-body">
+            <span class="preview-kicker">PLANO DE ENSINO</span>
+            <h2 class="h4">Imunologia</h2>
+            <div class="preview-line w-100"></div>
+            <div class="preview-line w-75"></div>
+            <div class="preview-line w-90"></div>
+            <div class="preview-section">
+              <strong>Conteúdo programático</strong>
+              <span>Unidades, tópicos e carga horária</span>
+            </div>
+            <div class="preview-download">DOCX editável</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="container py-5" aria-labelledby="beneficios-titulo">
+  <div class="section-heading">
+    <span class="section-kicker">MENOS RETRABALHO</span>
+    <h2 id="beneficios-titulo">Uma base coerente para a decisão pedagógica</h2>
+    <p>O RN DocumentAI organiza informações dispersas e entrega um documento revisável. A decisão final continua sendo do professor.</p>
+  </div>
+  <div class="row g-4 mt-1">
+    <div class="col-md-4">
+      <article class="card feature-card h-100 p-4">
+        <span class="feature-number">01</span>
+        <h3 class="h4">Personalização institucional</h3>
+        <p>Use curso, disciplina, ementa, objetivos, bibliografia, logomarca e fontes da sua instituição.</p>
+      </article>
+    </div>
+    <div class="col-md-4">
+      <article class="card feature-card h-100 p-4">
+        <span class="feature-number">02</span>
+        <h3 class="h4">Coerência acadêmica</h3>
+        <p>Objetivos, conteúdo, metodologia e avaliação são produzidos como um conjunto integrado.</p>
+      </article>
+    </div>
+    <div class="col-md-4">
+      <article class="card feature-card h-100 p-4">
+        <span class="feature-number">03</span>
+        <h3 class="h4">Resultado editável</h3>
+        <p>Baixe o DOCX, faça os ajustes finais e mantenha a supervisão docente antes do uso institucional.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section id="como-funciona" class="section-soft py-5">
+  <div class="container">
+    <div class="section-heading">
+      <span class="section-kicker">FLUXO OBJETIVO</span>
+      <h2>Do contexto ao documento em três etapas</h2>
+    </div>
+    <div class="workflow-grid mt-4">
+      <article class="workflow-step">
+        <span>1</span>
+        <div><h3>Cadastre</h3><p>Informe instituição, curso e disciplina. Acrescente PDF ou DOCX quando precisar usar referências próprias.</p></div>
+      </article>
+      <article class="workflow-step">
+        <span>2</span>
+        <div><h3>Configure e gere</h3><p>Escolha período, semanas, metodologia, avaliação e observações. Cada geração consome 2 créditos.</p></div>
+      </article>
+      <article class="workflow-step">
+        <span>3</span>
+        <div><h3>Revise e baixe</h3><p>Confira o conteúdo estruturado, baixe o DOCX e valide o documento antes de utilizá-lo.</p></div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="container py-5" aria-labelledby="planos-resumo">
+  <div class="section-heading text-center mx-auto">
+    <span class="section-kicker">COMECE GRATUITAMENTE</span>
+    <h2 id="planos-resumo">Um plano para cada ritmo de produção</h2>
+    <p>O plano Gratuito não inicia cobrança automática. Assine somente quando precisar de mais capacidade.</p>
+  </div>
+  <div class="row g-4 mt-2 justify-content-center">
+    {% for plan in plans %}
+      <div class="col-md-4">
+        <article class="card pricing-mini h-100 p-4 {% if plan.code == 'PRO' %}pricing-highlight{% endif %}">
+          {% if plan.code == 'PRO' %}<span class="badge text-bg-warning align-self-start mb-2">Mais escolhido</span>{% endif %}
+          <h3>{{ plan.name }}</h3>
+          <div class="price-label">{{ plan.price_label }}</div>
+          <p class="text-muted">
+            {% if plan.initial_credits %}{{ plan.initial_credits }} créditos iniciais{% else %}{{ plan.monthly_credits }} créditos mensais{% endif %}
+          </p>
+          <a class="btn {% if plan.code == 'FREE' %}btn-outline-primary{% else %}btn-warning{% endif %} mt-auto" href="{% if plan.code == 'FREE' %}{% url 'register' %}{% else %}{% url 'register' %}?next={% url 'subscription' %}{% endif %}">
+            {% if plan.code == 'FREE' %}Começar grátis{% else %}Escolher {{ plan.name }}{% endif %}
+          </a>
+        </article>
+      </div>
+    {% endfor %}
+  </div>
+  <div class="text-center mt-4"><a href="{% url 'pricing' %}">Comparar todos os limites dos planos</a></div>
+</section>
+
+<section id="faq" class="section-soft py-5">
+  <div class="container faq-container">
+    <div class="section-heading">
+      <span class="section-kicker">PERGUNTAS FREQUENTES</span>
+      <h2>O que você precisa saber antes de começar</h2>
+    </div>
+    <div class="faq-list mt-4">
+      <details>
+        <summary>O RN DocumentAI substitui a revisão do professor?</summary>
+        <p>Não. A plataforma produz uma primeira versão estruturada. O professor deve revisar, adaptar e validar o documento antes de utilizá-lo institucionalmente.</p>
+      </details>
+      <details>
+        <summary>O plano Gratuito gera alguma cobrança automática?</summary>
+        <p>Não. A conta começa com 5 créditos gratuitos e não exige cartão. A cobrança só existe quando o usuário escolhe um plano pago.</p>
+      </details>
+      <details>
+        <summary>Quantos créditos uma geração utiliza?</summary>
+        <p>Cada Plano de Ensino gerado consome 2 créditos. Se ocorrer uma falha técnica após a reserva, os créditos são devolvidos automaticamente.</p>
+      </details>
+      <details>
+        <summary>Quais fontes podem ser enviadas?</summary>
+        <p>Arquivos PDF ou DOCX de até 5 MB, como ementas, PPCs, DCNs, regulamentos e outras referências acadêmicas que você tenha autorização para utilizar.</p>
+      </details>
+      <details>
+        <summary>Os arquivos enviados ficam públicos?</summary>
+        <p>Não. As fontes e os documentos gerados ficam em armazenamento privado e o download é protegido pela autenticação do usuário.</p>
+      </details>
+      <details>
+        <summary>Posso cancelar um plano pago?</summary>
+        <p>Sim. O cancelamento interrompe renovações futuras e preserva o acesso até o fim do período já pago.</p>
+      </details>
+    </div>
+  </div>
+</section>
+
+<section class="container py-5">
+  <div class="final-cta">
+    <div>
+      <span class="section-kicker text-warning">RN DOCUMENTAI</span>
+      <h2>Comece pelo seu próximo Plano de Ensino.</h2>
+      <p class="mb-0">Crie a conta, receba 5 créditos gratuitos e mantenha a decisão final sob supervisão docente.</p>
+    </div>
+    <a class="btn btn-warning btn-lg" href="{% url 'register' %}">Criar conta gratuitamente</a>
+  </div>
+</section>
+{% endblock %}
