@@ -136,7 +136,7 @@ class CommercialPagesTests(TestCase):
             content = response.content.decode("utf-8").lower()
             self.assertEqual(response.status_code, 200)
             self.assertNotIn("beta", content)
-            self.assertIn("25 de julho de 2026", content)
+            self.assertIn("28 de julho de 2026", content)
 
 
 class ProductExperienceTests(TestCase):
