@@ -151,3 +151,10 @@ class DocumentWorkflowViewTests(TestCase):
         self.user.wallet.refresh_from_db()
         self.assertEqual(self.user.wallet.balance, 3)
         process_template.assert_called_once()
+
+        project.content["sections"][0]["body"] = "Ensino & pesquisa <integrados>"
+        project.save(update_fields=["content"])
+        pdf_response = self.client.get(reverse("project_download_pdf", args=[project.pk]))
+        self.assertEqual(pdf_response.status_code, 200)
+        pdf_bytes = b"".join(pdf_response.streaming_content)
+        self.assertTrue(pdf_bytes.startswith(b"%PDF"))
