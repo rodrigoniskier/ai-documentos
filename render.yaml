@@ -30,11 +30,11 @@ services:
       - key: OPENAI_MODEL
         value: gpt-5.4-mini
       - key: SUPPORT_EMAIL
-        value: rncontentlab@gmail.com
+        value: backuprodrigoniskier@gmail.com
       - key: TERMS_VERSION
-        value: "2026-07-25"
+        value: "2026-07-28"
       - key: PRIVACY_VERSION
-        value: "2026-07-25"
+        value: "2026-07-28"
       - key: AWS_ACCESS_KEY_ID
         sync: false
       - key: AWS_SECRET_ACCESS_KEY
@@ -64,9 +64,9 @@ services:
       - key: ASAAS_BILLING_TYPES
         value: "CREDIT_CARD"
       - key: ASAAS_WEBHOOK_NAME
-        value: "RN DocumentAI — Asaas Produção"
+        value: "AjudAI Docente — Asaas Produção"
       - key: ASAAS_WEBHOOK_EMAIL
-        value: "rncontentlab@gmail.com"
+        value: "backuprodrigoniskier@gmail.com"
       - key: SECURE_HSTS_SECONDS
         value: "31536000"
 
