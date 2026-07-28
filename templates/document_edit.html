@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+{% block title %}Revisar documento — AjudAI Docente{% endblock %}
+{% block meta_robots %}noindex,nofollow{% endblock %}
+{% block content %}
+<div class="container py-5">
+  <header class="result-header">
+    <div>
+      <span class="section-kicker">REVISÃO HUMANA</span>
+      <h1>{{ project.title }}</h1>
+      <p class="text-muted mb-0">{{ project.get_document_type_display }} · atualizado em {{ project.updated_at|date:'d/m/Y H:i' }}</p>
+    </div>
+    <div class="result-actions">
+      <a class="btn btn-primary" href="{% url 'project_download_docx' project.pk %}">Baixar DOCX</a>
+      <a class="btn btn-outline-primary" href="{% url 'project_download_pdf' project.pk %}">Baixar PDF</a>
+    </div>
+  </header>
+
+  <div class="review-banner mt-4" role="note">
+    <span aria-hidden="true">✓</span>
+    <div><strong>Conteúdo pronto para revisão.</strong><p>Edite títulos e textos, remova seções desnecessárias e acrescente novos campos antes de exportar.</p></div>
+  </div>
+
+  <form method="post" class="mt-4" id="editor-form">
+    {% csrf_token %}
+    <div class="card p-4 mb-3">
+      <label class="form-label" for="project-title">Título</label>
+      <input class="form-control form-control-lg" id="project-title" name="title" value="{{ project.title }}" maxlength="220" required>
+    </div>
+
+    <div class="card p-4 mb-3">
+      <label class="form-label" for="warnings">Alertas e limitações</label>
+      <textarea class="form-control" id="warnings" name="warnings" rows="3">{{ warnings_text }}</textarea>
+      <div class="form-text">Use uma linha para cada alerta que deve acompanhar o documento.</div>
+    </div>
+
+    <div id="sections-container">
+      {% for section in sections %}
+        <article class="card result-section p-4 mb-3 editor-section">
+          <div class="d-flex justify-content-between gap-2 align-items-start">
+            <div class="flex-grow-1">
+              <label class="form-label">Título da seção</label>
+              <input class="form-control section-heading" name="section_heading" value="{{ section.heading }}" required>
+            </div>
+            <button class="btn btn-outline-danger remove-section" type="button" aria-label="Remover seção">Remover</button>
+          </div>
+          <label class="form-label mt-3">Conteúdo</label>
+          <textarea class="form-control section-body" name="section_body" rows="7">{{ section.body }}</textarea>
+        </article>
+      {% empty %}
+        <article class="card result-section p-4 mb-3 editor-section">
+          <label class="form-label">Título da seção</label>
+          <input class="form-control section-heading" name="section_heading" value="Conteúdo" required>
+          <label class="form-label mt-3">Conteúdo</label>
+          <textarea class="form-control section-body" name="section_body" rows="7"></textarea>
+        </article>
+      {% endfor %}
+    </div>
+
+    <div class="d-flex flex-wrap gap-2 mt-4">
+      <button class="btn btn-outline-primary" id="add-section" type="button">Adicionar seção</button>
+      <button class="btn btn-warning ms-md-auto" type="submit">Salvar revisões</button>
+    </div>
+  </form>
+</div>
+<template id="section-template">
+  <article class="card result-section p-4 mb-3 editor-section">
+    <div class="d-flex justify-content-between gap-2 align-items-start">
+      <div class="flex-grow-1"><label class="form-label">Título da seção</label><input class="form-control section-heading" name="section_heading" value="Nova seção" required></div>
+      <button class="btn btn-outline-danger remove-section" type="button">Remover</button>
+    </div>
+    <label class="form-label mt-3">Conteúdo</label>
+    <textarea class="form-control section-body" name="section_body" rows="7"></textarea>
+  </article>
+</template>
+{% endblock %}
+{% block scripts %}
+<script>
+(() => {
+  const container = document.getElementById('sections-container');
+  const template = document.getElementById('section-template');
+  document.getElementById('add-section').addEventListener('click', () => {
+    container.appendChild(template.content.cloneNode(true));
+    container.lastElementChild.querySelector('.section-heading').focus();
+  });
+  container.addEventListener('click', event => {
+    const button = event.target.closest('.remove-section');
+    if (!button) return;
+    if (container.querySelectorAll('.editor-section').length === 1) {
+      button.closest('.editor-section').querySelector('.section-heading').value = '';
+      button.closest('.editor-section').querySelector('.section-body').value = '';
+      return;
+    }
+    button.closest('.editor-section').remove();
+  });
+})();
+</script>
+{% endblock %}
