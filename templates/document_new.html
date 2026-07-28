@@ -1,0 +1,127 @@
+{% extends 'base.html' %}
+{% block title %}Novo documento — AjudAI Docente{% endblock %}
+{% block meta_robots %}noindex,nofollow{% endblock %}
+{% block content %}
+<div class="container py-5">
+  <div class="generate-layout">
+    <section class="card generate-card p-4 p-lg-5">
+      <span class="section-kicker">NOVO DOCUMENTO</span>
+      <h1>Personalize seu próprio modelo</h1>
+      <p class="text-muted">O modelo orienta a estrutura. Os campos e referências orientam o conteúdo. Tudo poderá ser revisado antes da exportação.</p>
+
+      {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors }}</div>{% endif %}
+      <div class="alert alert-info generation-cost"><strong>Esta geração utiliza {{ generation_cost }} créditos.</strong><span>Saldo atual: {{ user.wallet.balance }} crédito{{ user.wallet.balance|pluralize }}.</span></div>
+
+      <form method="post" enctype="multipart/form-data" id="generation-form" novalidate>
+        {% csrf_token %}
+        <div class="row g-3">
+          <div class="col-md-5"><label class="form-label" for="{{ form.document_type.id_for_label }}">{{ form.document_type.label }}</label>{{ form.document_type }}{{ form.document_type.errors }}</div>
+          <div class="col-md-7"><label class="form-label" for="{{ form.title.id_for_label }}">{{ form.title.label }}</label>{{ form.title }}{{ form.title.errors }}</div>
+          <div class="col-md-5"><label class="form-label" for="{{ form.template_title.id_for_label }}">{{ form.template_title.label }}</label>{{ form.template_title }}{{ form.template_title.errors }}</div>
+          <div class="col-md-7"><label class="form-label" for="{{ form.template_file.id_for_label }}">{{ form.template_file.label }}</label>{{ form.template_file }}<div class="form-text">{{ form.template_file.help_text }}</div>{{ form.template_file.errors }}</div>
+        </div>
+
+        <hr class="my-4">
+        <h2 class="h4">Campos típicos do documento</h2>
+        <p class="text-muted">Nenhum campo desta etapa é obrigatório. Preencha somente o que fizer sentido.</p>
+        <div id="dynamic-fields" class="row g-3"></div>
+        {{ form.extra_fields_json }}
+
+        <hr class="my-4">
+        <h2 class="h4">Fontes e contexto</h2>
+        <div class="mb-3"><label class="form-label" for="{{ form.reference_files.id_for_label }}">{{ form.reference_files.label }}</label>{{ form.reference_files }}<div class="form-text">{{ form.reference_files.help_text }}</div>{{ form.reference_files.errors }}</div>
+        <div id="no-reference-warning" class="alert alert-warning">Sem referências, informe curso e contexto. A IA sinalizará a limitação e o documento exigirá revisão humana mais rigorosa.</div>
+        <div class="row g-3">
+          <div class="col-md-5"><label class="form-label" for="{{ form.course_context.id_for_label }}">{{ form.course_context.label }}</label>{{ form.course_context }}<div class="form-text">{{ form.course_context.help_text }}</div>{{ form.course_context.errors }}</div>
+          <div class="col-md-7"><label class="form-label" for="{{ form.institution_context.id_for_label }}">{{ form.institution_context.label }}</label>{{ form.institution_context }}<div class="form-text">{{ form.institution_context.help_text }}</div>{{ form.institution_context.errors }}</div>
+        </div>
+
+        <hr class="my-4">
+        <div class="mb-3"><label class="form-label" for="{{ form.logo.id_for_label }}">{{ form.logo.label }}</label>{{ form.logo }}<div class="form-text">Opcional. Formatos de imagem comuns, até 3 MB.</div>{{ form.logo.errors }}</div>
+
+        <button class="btn btn-warning btn-lg w-100" id="generation-submit" type="submit">
+          <span class="submit-label">Gerar documento editável</span>
+          <span class="submit-loading d-none"><span class="spinner-border spinner-border-sm" aria-hidden="true"></span> Gerando seu documento…</span>
+        </button>
+      </form>
+
+      <div id="generation-status" class="generation-status mt-4" role="status" aria-live="polite" hidden>
+        <div class="status-icon"><span class="spinner-border text-warning" aria-hidden="true"></span></div>
+        <div><strong>A IA está analisando o modelo e as referências.</strong><p class="mb-0">Não feche nem atualize esta página.</p></div>
+      </div>
+    </section>
+
+    <aside class="generate-aside">
+      <div class="card p-4"><h2 class="h5">Como obter melhor resultado</h2><ul class="check-list"><li>Use um modelo limpo e atualizado.</li><li>Anexe documentos realmente relevantes.</li><li>Evite dados pessoais ou sensíveis.</li><li>Revise normas, datas e bibliografia.</li></ul></div>
+      <div class="responsibility-note mt-3"><strong>Revisão humana obrigatória</strong><p>A IA organiza uma primeira versão. A responsabilidade acadêmica e institucional permanece com o usuário.</p></div>
+    </aside>
+  </div>
+</div>
+<script id="field-config" type="application/json">{{ field_configuration_json|safe }}</script>
+{% endblock %}
+{% block scripts %}
+<script>
+(() => {
+  const form = document.getElementById('generation-form');
+  const typeSelect = document.getElementById('id_document_type');
+  const container = document.getElementById('dynamic-fields');
+  const hidden = document.getElementById('id_extra_fields_json');
+  const referenceInput = document.getElementById('id_reference_files');
+  const warning = document.getElementById('no-reference-warning');
+  const config = JSON.parse(document.getElementById('field-config').textContent || '{}');
+  const existing = (() => { try { return JSON.parse(hidden.value || '{}'); } catch (_) { return {}; } })();
+
+  function renderFields() {
+    const previous = {};
+    container.querySelectorAll('[data-field-name]').forEach(input => previous[input.dataset.fieldName] = input.value);
+    container.innerHTML = '';
+    (config[typeSelect.value] || []).forEach(field => {
+      const wrapper = document.createElement('div');
+      wrapper.className = 'col-md-6';
+      const label = document.createElement('label');
+      label.className = 'form-label';
+      label.textContent = field.label;
+      const input = document.createElement('textarea');
+      input.className = 'form-control';
+      input.rows = 2;
+      input.dataset.fieldName = field.name;
+      input.value = previous[field.name] ?? existing[field.name] ?? '';
+      wrapper.append(label, input);
+      container.appendChild(wrapper);
+    });
+  }
+
+  function updateWarning() {
+    warning.hidden = referenceInput.files.length > 0;
+  }
+
+  typeSelect.addEventListener('change', renderFields);
+  referenceInput.addEventListener('change', updateWarning);
+  renderFields();
+  updateWarning();
+
+  let submitted = false;
+  form.addEventListener('submit', event => {
+    const values = {};
+    container.querySelectorAll('[data-field-name]').forEach(input => {
+      if (input.value.trim()) values[input.dataset.fieldName] = input.value.trim();
+    });
+    hidden.value = JSON.stringify(values);
+    if (!form.checkValidity()) {
+      event.preventDefault();
+      form.classList.add('was-validated');
+      return;
+    }
+    if (submitted) {
+      event.preventDefault();
+      return;
+    }
+    submitted = true;
+    document.getElementById('generation-submit').disabled = true;
+    document.querySelector('.submit-label').classList.add('d-none');
+    document.querySelector('.submit-loading').classList.remove('d-none');
+    document.getElementById('generation-status').hidden = false;
+  });
+})();
+</script>
+{% endblock %}

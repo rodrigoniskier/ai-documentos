@@ -4,25 +4,25 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{% block title %}AjudAI Docente — Planos de Ensino com inteligência artificial{% endblock %}</title>
-  <meta name="description" content="{% block meta_description %}Crie Planos de Ensino personalizados, editáveis e alinhados ao contexto da sua instituição com apoio de inteligência artificial.{% endblock %}">
+  <title>{% block title %}AjudAI Docente — Documentos acadêmicos personalizados com IA{% endblock %}</title>
+  <meta name="description" content="{% block meta_description %}Envie seu modelo, acrescente referências e gere documentos acadêmicos editáveis com apoio de inteligência artificial.{% endblock %}">
   <meta name="robots" content="{% block meta_robots %}index,follow,max-image-preview:large{% endblock %}">
   <link rel="canonical" href="{{ canonical_url }}">
 
   <meta property="og:locale" content="pt_BR">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="AjudAI Docente">
-  <meta property="og:title" content="AjudAI Docente — Planos de Ensino com IA">
-  <meta property="og:description" content="Organize o contexto acadêmico, gere uma primeira versão estruturada e baixe o Plano de Ensino em DOCX editável.">
+  <meta property="og:title" content="AjudAI Docente — Documentos acadêmicos com IA">
+  <meta property="og:description" content="Use seu próprio modelo, fontes de referência e campos personalizados. Revise e exporte em DOCX ou PDF.">
   <meta property="og:url" content="{{ canonical_url }}">
   <meta property="og:image" content="{{ social_image_url }}">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
-  <meta property="og:image:alt" content="AjudAI Docente — Planos de Ensino com inteligência artificial">
+  <meta property="og:image:alt" content="AjudAI Docente — Documentos acadêmicos personalizados com inteligência artificial">
 
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="AjudAI Docente — Planos de Ensino com IA">
-  <meta name="twitter:description" content="Gere uma primeira versão estruturada e baixe o resultado em DOCX editável.">
+  <meta name="twitter:title" content="AjudAI Docente — Documentos acadêmicos com IA">
+  <meta name="twitter:description" content="Envie seu modelo, revise o conteúdo em formulário editável e exporte em DOCX ou PDF.">
   <meta name="twitter:image" content="{{ social_image_url }}">
 
   <link rel="icon" href="{% static 'favicon.svg' %}" type="image/svg+xml">
@@ -46,11 +46,10 @@
     <div class="collapse navbar-collapse" id="mainNav">
       <div class="navbar-nav ms-auto align-items-lg-center">
         {% if user.is_authenticated %}
-          <a class="nav-link" href="{% url 'dashboard' %}">Painel</a>
-          <a class="nav-link" href="{% url 'academics' %}">Acadêmico</a>
-          <a class="nav-link" href="{% url 'document_history' %}">Documentos</a>
+          <a class="nav-link" href="{% url 'workspace' %}">Painel</a>
+          <a class="nav-link" href="{% url 'project_history' %}">Documentos</a>
           <a class="nav-link" href="{% url 'subscription' %}">Assinatura</a>
-          <a class="btn btn-warning ms-lg-2" href="{% url 'generate_document' %}">Gerar plano</a>
+          <a class="btn btn-warning ms-lg-2" href="{% url 'project_new' %}">Novo documento</a>
           <form method="post" action="{% url 'logout' %}" class="ms-lg-2">
             {% csrf_token %}
             <button class="btn btn-outline-light" type="submit">Sair</button>
@@ -82,7 +81,7 @@
     <div class="row g-3 align-items-center">
       <div class="col-md-5">
         <strong class="text-navy">AI_RN_LAB · AjudAI Docente</strong>
-        <p class="small text-muted mb-0">Tecnologia para reduzir retrabalho sem retirar a responsabilidade pedagógica.</p>
+        <p class="small text-muted mb-0">Modelos próprios, referências confiáveis e revisão humana antes da utilização.</p>
       </div>
       <div class="col-md-7">
         <div class="d-flex flex-wrap justify-content-md-end gap-3 small">

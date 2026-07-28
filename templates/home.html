@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
-{% block title %}AjudAI Docente — Crie Planos de Ensino com IA{% endblock %}
-{% block meta_description %}Cadastre o contexto acadêmico, use fontes institucionais e gere Planos de Ensino editáveis em DOCX com apoio de inteligência artificial.{% endblock %}
+{% block title %}AjudAI Docente — Personalize documentos acadêmicos com IA{% endblock %}
+{% block meta_description %}Envie seu modelo, acrescente campos e referências, revise o conteúdo em formulário editável e exporte em DOCX ou PDF.{% endblock %}
 {% block structured_data %}
 <script type="application/ld+json">
 {
@@ -11,7 +11,7 @@
   "applicationCategory": "EducationalApplication",
   "operatingSystem": "Web",
   "inLanguage": "pt-BR",
-  "description": "Plataforma para professores do ensino superior criarem Planos de Ensino personalizados e editáveis com apoio de inteligência artificial.",
+  "description": "Plataforma para personalizar documentos acadêmicos a partir de modelos e referências do usuário, com revisão editável e exportação em DOCX ou PDF.",
   "offers": [
     {"@type": "Offer", "name": "Gratuito", "price": "0", "priceCurrency": "BRL"},
     {"@type": "Offer", "name": "Pro", "price": "19.90", "priceCurrency": "BRL"},
@@ -26,33 +26,30 @@
   <div class="container py-5">
     <div class="row align-items-center g-5">
       <div class="col-lg-7">
-        <span class="eyebrow">Para professores do ensino superior</span>
-        <h1>Seu Plano de Ensino começa com o contexto certo.</h1>
-        <p class="lead mt-3">Cadastre instituição, curso, disciplina e fontes uma vez. Gere uma primeira versão estruturada, baixe em DOCX e faça a revisão docente.</p>
+        <span class="eyebrow">Seu modelo. Suas referências. Sua revisão.</span>
+        <h1>Transforme modelos acadêmicos em documentos personalizados.</h1>
+        <p class="lead mt-3">Envie uma ementa, plano de ensino, cronograma, plano de aula, avaliação ou outro modelo. A IA organiza o preenchimento, você revisa em um formulário editável e exporta em DOCX ou PDF.</p>
         <div class="mt-4 d-flex flex-wrap gap-2">
           <a class="btn btn-warning btn-lg" href="{% url 'register' %}">Começar com 5 créditos grátis</a>
           <a class="btn btn-outline-light btn-lg" href="#como-funciona">Ver como funciona</a>
         </div>
         <div class="trust-row mt-4" role="list" aria-label="Informações principais">
-          <span class="trust-chip" role="listitem">Sem cartão no plano Gratuito</span>
-          <span class="trust-chip" role="listitem">DOCX editável</span>
-          <span class="trust-chip" role="listitem">Arquivos privados</span>
+          <span class="trust-chip" role="listitem">Modelo próprio</span>
+          <span class="trust-chip" role="listitem">Editor antes da exportação</span>
+          <span class="trust-chip" role="listitem">DOCX e PDF</span>
         </div>
       </div>
       <div class="col-lg-5">
-        <div class="product-preview" role="img" aria-label="Prévia de um Plano de Ensino editável no AjudAI Docente">
+        <div class="product-preview" role="img" aria-label="Prévia de documento acadêmico editável no AjudAI Docente">
           <div class="preview-topbar"><span></span><span></span><span></span><strong>AjudAI Docente</strong></div>
           <div class="preview-body">
-            <span class="preview-kicker">PLANO DE ENSINO</span>
-            <h2 class="h4">Imunologia</h2>
+            <span class="preview-kicker">MODELO ENVIADO</span>
+            <h2 class="h4">Cronograma de aulas</h2>
             <div class="preview-line w-100"></div>
             <div class="preview-line w-75"></div>
             <div class="preview-line w-90"></div>
-            <div class="preview-section">
-              <strong>Conteúdo programático</strong>
-              <span>Unidades, tópicos e carga horária</span>
-            </div>
-            <div class="preview-download">DOCX editável</div>
+            <div class="preview-section"><strong>Conteúdo revisável</strong><span>Edite títulos, textos e novas seções</span></div>
+            <div class="preview-download">DOCX ou PDF</div>
           </div>
         </div>
       </div>
@@ -62,79 +59,38 @@
 
 <section class="container py-5" aria-labelledby="beneficios-titulo">
   <div class="section-heading">
-    <span class="section-kicker">MENOS RETRABALHO</span>
-    <h2 id="beneficios-titulo">Uma base coerente para a decisão pedagógica</h2>
-    <p>O AjudAI Docente organiza informações dispersas e entrega um documento revisável. A decisão final continua sendo do professor.</p>
+    <span class="section-kicker">PERSONALIZAÇÃO REAL</span>
+    <h2 id="beneficios-titulo">A IA parte do documento que você já utiliza</h2>
+    <p>Em vez de impor um formato genérico, o AjudAI Docente analisa o modelo, considera os campos informados e usa suas referências como fonte prioritária.</p>
   </div>
   <div class="row g-4 mt-1">
-    <div class="col-md-4">
-      <article class="card feature-card h-100 p-4">
-        <span class="feature-number">01</span>
-        <h3 class="h4">Personalização institucional</h3>
-        <p>Use curso, disciplina, ementa, objetivos, bibliografia, logomarca e fontes da sua instituição.</p>
-      </article>
-    </div>
-    <div class="col-md-4">
-      <article class="card feature-card h-100 p-4">
-        <span class="feature-number">02</span>
-        <h3 class="h4">Coerência acadêmica</h3>
-        <p>Objetivos, conteúdo, metodologia e avaliação são produzidos como um conjunto integrado.</p>
-      </article>
-    </div>
-    <div class="col-md-4">
-      <article class="card feature-card h-100 p-4">
-        <span class="feature-number">03</span>
-        <h3 class="h4">Resultado editável</h3>
-        <p>Baixe o DOCX, faça os ajustes finais e mantenha a supervisão docente antes do uso institucional.</p>
-      </article>
-    </div>
+    <div class="col-md-4"><article class="card feature-card h-100 p-4"><span class="feature-number">01</span><h3 class="h4">Modelo próprio</h3><p>Envie DOCX ou PDF para orientar estrutura, títulos e finalidade do documento.</p></article></div>
+    <div class="col-md-4"><article class="card feature-card h-100 p-4"><span class="feature-number">02</span><h3 class="h4">Referências confiáveis</h3><p>Anexe PPC, diretrizes, regulamentos, apostilas e outros materiais autorizados.</p></article></div>
+    <div class="col-md-4"><article class="card feature-card h-100 p-4"><span class="feature-number">03</span><h3 class="h4">Revisão antes do arquivo</h3><p>Edite o conteúdo, acrescente seções e somente depois gere o DOCX ou PDF.</p></article></div>
   </div>
 </section>
 
 <section id="como-funciona" class="section-soft py-5">
   <div class="container">
-    <div class="section-heading">
-      <span class="section-kicker">FLUXO OBJETIVO</span>
-      <h2>Do contexto ao documento em três etapas</h2>
-    </div>
+    <div class="section-heading"><span class="section-kicker">FLUXO OBJETIVO</span><h2>Do modelo ao arquivo em três etapas</h2></div>
     <div class="workflow-grid mt-4">
-      <article class="workflow-step">
-        <span>1</span>
-        <div><h3>Cadastre</h3><p>Informe instituição, curso e disciplina. Acrescente PDF ou DOCX quando precisar usar referências próprias.</p></div>
-      </article>
-      <article class="workflow-step">
-        <span>2</span>
-        <div><h3>Configure e gere</h3><p>Escolha período, semanas, metodologia, avaliação e observações. Cada geração consome 2 créditos.</p></div>
-      </article>
-      <article class="workflow-step">
-        <span>3</span>
-        <div><h3>Revise e baixe</h3><p>Confira o conteúdo estruturado, baixe o DOCX e valide o documento antes de utilizá-lo.</p></div>
-      </article>
+      <article class="workflow-step"><span>1</span><div><h3>Envie</h3><p>Escolha o tipo de documento, carregue o modelo e, se desejar, a logomarca.</p></div></article>
+      <article class="workflow-step"><span>2</span><div><h3>Contextualize</h3><p>Preencha campos opcionais e anexe referências. Sem referências, informe curso e contexto.</p></div></article>
+      <article class="workflow-step"><span>3</span><div><h3>Revise e exporte</h3><p>Edite o formulário, acrescente seções e baixe em DOCX ou PDF. Cada geração consome 2 créditos.</p></div></article>
     </div>
   </div>
 </section>
 
 <section class="container py-5" aria-labelledby="planos-resumo">
-  <div class="section-heading text-center mx-auto">
-    <span class="section-kicker">COMECE GRATUITAMENTE</span>
-    <h2 id="planos-resumo">Um plano para cada ritmo de produção</h2>
-    <p>O plano Gratuito não inicia cobrança automática. Assine somente quando precisar de mais capacidade.</p>
-  </div>
+  <div class="section-heading text-center mx-auto"><span class="section-kicker">COMECE GRATUITAMENTE</span><h2 id="planos-resumo">Um plano para cada ritmo de produção</h2><p>O plano Gratuito não inicia cobrança automática. Assine somente quando precisar de mais capacidade.</p></div>
   <div class="row g-4 mt-2 justify-content-center">
     {% for plan in plans %}
-      <div class="col-md-4">
-        <article class="card pricing-mini h-100 p-4 {% if plan.code == 'PRO' %}pricing-highlight{% endif %}">
-          {% if plan.code == 'PRO' %}<span class="badge text-bg-warning align-self-start mb-2">Mais escolhido</span>{% endif %}
-          <h3>{{ plan.name }}</h3>
-          <div class="price-label">{{ plan.price_label }}</div>
-          <p class="text-muted">
-            {% if plan.initial_credits %}{{ plan.initial_credits }} créditos iniciais{% else %}{{ plan.monthly_credits }} créditos mensais{% endif %}
-          </p>
-          <a class="btn {% if plan.code == 'FREE' %}btn-outline-primary{% else %}btn-warning{% endif %} mt-auto" href="{% if plan.code == 'FREE' %}{% url 'register' %}{% else %}{% url 'register' %}?next={% url 'subscription' %}{% endif %}">
-            {% if plan.code == 'FREE' %}Começar grátis{% else %}Escolher {{ plan.name }}{% endif %}
-          </a>
-        </article>
-      </div>
+      <div class="col-md-4"><article class="card pricing-mini h-100 p-4 {% if plan.code == 'PRO' %}pricing-highlight{% endif %}">
+        {% if plan.code == 'PRO' %}<span class="badge text-bg-warning align-self-start mb-2">Mais escolhido</span>{% endif %}
+        <h3>{{ plan.name }}</h3><div class="price-label">{{ plan.price_label }}</div>
+        <p class="text-muted">{% if plan.initial_credits %}{{ plan.initial_credits }} créditos iniciais{% else %}{{ plan.monthly_credits }} créditos mensais{% endif %}</p>
+        <a class="btn {% if plan.code == 'FREE' %}btn-outline-primary{% else %}btn-warning{% endif %} mt-auto" href="{% if plan.code == 'FREE' %}{% url 'register' %}{% else %}{% url 'register' %}?next={% url 'subscription' %}{% endif %}">{% if plan.code == 'FREE' %}Começar grátis{% else %}Escolher {{ plan.name }}{% endif %}</a>
+      </article></div>
     {% endfor %}
   </div>
   <div class="text-center mt-4"><a href="{% url 'pricing' %}">Comparar todos os limites dos planos</a></div>
@@ -142,47 +98,16 @@
 
 <section id="faq" class="section-soft py-5">
   <div class="container faq-container">
-    <div class="section-heading">
-      <span class="section-kicker">PERGUNTAS FREQUENTES</span>
-      <h2>O que você precisa saber antes de começar</h2>
-    </div>
+    <div class="section-heading"><span class="section-kicker">PERGUNTAS FREQUENTES</span><h2>O que você precisa saber antes de começar</h2></div>
     <div class="faq-list mt-4">
-      <details>
-        <summary>O AjudAI Docente substitui a revisão do professor?</summary>
-        <p>Não. A plataforma produz uma primeira versão estruturada. O professor deve revisar, adaptar e validar o documento antes de utilizá-lo institucionalmente.</p>
-      </details>
-      <details>
-        <summary>O plano Gratuito gera alguma cobrança automática?</summary>
-        <p>Não. A conta começa com 5 créditos gratuitos e não exige cartão. A cobrança só existe quando o usuário escolhe um plano pago.</p>
-      </details>
-      <details>
-        <summary>Quantos créditos uma geração utiliza?</summary>
-        <p>Cada Plano de Ensino gerado consome 2 créditos. Se ocorrer uma falha técnica após a reserva, os créditos são devolvidos automaticamente.</p>
-      </details>
-      <details>
-        <summary>Quais fontes podem ser enviadas?</summary>
-        <p>Arquivos PDF ou DOCX de até 5 MB, como ementas, PPCs, DCNs, regulamentos e outras referências acadêmicas que você tenha autorização para utilizar.</p>
-      </details>
-      <details>
-        <summary>Os arquivos enviados ficam públicos?</summary>
-        <p>Não. As fontes e os documentos gerados ficam em armazenamento privado e o download é protegido pela autenticação do usuário.</p>
-      </details>
-      <details>
-        <summary>Posso cancelar um plano pago?</summary>
-        <p>Sim. O cancelamento interrompe renovações futuras e preserva o acesso até o fim do período já pago.</p>
-      </details>
+      <details><summary>Quais documentos posso personalizar?</summary><p>Ementas, planos de ensino, cronogramas, planos de aula, avaliações, relatórios, projetos e outros modelos acadêmicos.</p></details>
+      <details><summary>Preciso anexar referências?</summary><p>Não. Sem referências, a plataforma solicitará curso e contexto, alertará sobre a limitação e reforçará a revisão humana.</p></details>
+      <details><summary>O AjudAI Docente preserva exatamente o layout?</summary><p>Modelos DOCX com campos identificados, por exemplo “título” e “conteúdo gerado”, permitem substituição mais direta. Nos demais casos, a estrutura é interpretada e o documento é reconstruído usando o modelo como orientação.</p></details>
+      <details><summary>A IA substitui a revisão do professor?</summary><p>Não. O usuário deve revisar conteúdo, normas, datas, bibliografia e adequação institucional antes da utilização.</p></details>
+      <details><summary>Os arquivos ficam públicos?</summary><p>Não. Modelos, referências e projetos ficam associados à conta autenticada e são tratados como arquivos privados.</p></details>
     </div>
   </div>
 </section>
 
-<section class="container py-5">
-  <div class="final-cta">
-    <div>
-      <span class="section-kicker text-warning">AJUDAI DOCENTE</span>
-      <h2>Comece pelo seu próximo Plano de Ensino.</h2>
-      <p class="mb-0">Crie a conta, receba 5 créditos gratuitos e mantenha a decisão final sob supervisão docente.</p>
-    </div>
-    <a class="btn btn-warning btn-lg" href="{% url 'register' %}">Criar conta gratuitamente</a>
-  </div>
-</section>
+<section class="container py-5"><div class="final-cta"><div><span class="section-kicker text-warning">AJUDAI DOCENTE</span><h2>Comece pelo documento que você já usa.</h2><p class="mb-0">Crie a conta, receba 5 créditos e transforme seu modelo em uma primeira versão revisável.</p></div><a class="btn btn-warning btn-lg" href="{% url 'register' %}">Criar conta gratuitamente</a></div></section>
 {% endblock %}

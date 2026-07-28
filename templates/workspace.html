@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+{% block title %}Painel — AjudAI Docente{% endblock %}
+{% block meta_robots %}noindex,nofollow{% endblock %}
+{% block content %}
+<div class="container py-5">
+  <div class="dashboard-heading">
+    <div>
+      <span class="section-kicker">PAINEL</span>
+      <h1>Olá, {{ user.professional_name }}</h1>
+      <p class="text-muted mb-0">Use um modelo próprio, acrescente referências e revise o documento antes de exportar.</p>
+    </div>
+    <a class="btn btn-warning btn-lg" href="{% url 'project_new' %}">Criar novo documento</a>
+  </div>
+
+  <div class="row g-3 my-4">
+    <div class="col-md-3"><div class="card metric-card p-4"><span>Créditos</span><strong>{{ user.wallet.balance }}</strong><small>Cada geração utiliza 2 créditos.</small></div></div>
+    <div class="col-md-3"><div class="card metric-card p-4"><span>Documentos</span><strong>{{ project_count }}</strong><small>Projetos editáveis criados.</small></div></div>
+    <div class="col-md-3"><div class="card metric-card p-4"><span>Modelos</span><strong>{{ template_count }}</strong><small>Estruturas enviadas por você.</small></div></div>
+    <div class="col-md-3"><div class="card metric-card p-4"><span>Uploads</span><strong>{{ upload_count }}/{{ upload_limit }}</strong><small>Modelos e referências do plano.</small></div></div>
+  </div>
+
+  {% if not projects %}
+  <section class="card onboarding-card p-4 p-lg-5 mb-5" aria-labelledby="primeiros-passos">
+    <div class="d-flex flex-column flex-lg-row justify-content-between gap-3">
+      <div><span class="section-kicker">PRIMEIROS PASSOS</span><h2 id="primeiros-passos" class="h3">Prepare sua primeira geração</h2><p class="text-muted mb-0">O modelo é obrigatório; os demais dados são fornecidos conforme a necessidade.</p></div>
+      <div class="progress-summary"><strong>0%</strong><span>concluído</span></div>
+    </div>
+    <div class="onboarding-grid mt-4">
+      <a class="onboarding-step" href="{% url 'project_new' %}"><span class="step-status">1</span><span><strong>Enviar o modelo</strong><small>Carregue DOCX ou PDF e escolha o tipo do documento.</small></span></a>
+      <a class="onboarding-step" href="{% url 'project_new' %}"><span class="step-status">2</span><span><strong>Cadastrar instituição <small>(opcional)</small></strong><small>Informe contexto e envie a logomarca no próprio formulário.</small></span></a>
+      <a class="onboarding-step" href="{% url 'project_new' %}"><span class="step-status">3</span><span><strong>Adicionar uma fonte <small>(opcional)</small></strong><small>Anexe referências para reduzir limitações do conteúdo.</small></span></a>
+      <a class="onboarding-step" href="{% url 'project_new' %}"><span class="step-status">4</span><span><strong>Gerar e revisar</strong><small>Edite seções e exporte em DOCX ou PDF.</small></span></a>
+    </div>
+  </section>
+  {% else %}
+  <section class="card onboarding-card p-4 p-lg-5 mb-5">
+    <span class="section-kicker">FLUXO NOVO</span>
+    <h2 class="h3">Do modelo ao documento revisado</h2>
+    <div class="workflow-grid mt-4">
+      <article class="workflow-step"><span>1</span><div><h3>Envie o modelo</h3><p>Selecione o tipo e carregue seu DOCX ou PDF.</p></div></article>
+      <article class="workflow-step"><span>2</span><div><h3>Forneça contexto</h3><p>Preencha campos opcionais e anexe referências confiáveis.</p></div></article>
+      <article class="workflow-step"><span>3</span><div><h3>Revise e exporte</h3><p>Edite seções, acrescente campos e gere DOCX ou PDF.</p></div></article>
+    </div>
+  </section>
+  {% endif %}
+
+  <section aria-labelledby="documentos-recentes">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+      <h2 id="documentos-recentes" class="h3 mb-0">Documentos recentes</h2>
+      <a href="{% url 'project_history' %}">Ver biblioteca completa</a>
+    </div>
+    <div class="list-group document-list mt-3">
+      {% for project in projects %}
+        <a class="list-group-item list-group-item-action" href="{% url 'project_edit' project.pk %}">
+          <span><strong>{{ project.title }}</strong><small>{{ project.get_document_type_display }} · {{ project.updated_at|date:'d/m/Y H:i' }}</small></span>
+          <span aria-hidden="true">→</span>
+        </a>
+      {% empty %}
+        <div class="empty-state"><strong>Nenhum documento gerado até agora.</strong><p>Envie um modelo para criar sua primeira versão revisável.</p><a class="btn btn-primary" href="{% url 'project_new' %}">Criar primeiro documento</a></div>
+      {% endfor %}
+    </div>
+  </section>
+</div>
+{% endblock %}

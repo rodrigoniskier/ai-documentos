@@ -1,16 +1,13 @@
 {% extends 'base.html' %}
 {% block title %}Planos e preços — AjudAI Docente{% endblock %}
-{% block meta_description %}Conheça os planos Gratuito, Pro e Ultra do AjudAI Docente. Comece com 5 créditos gratuitos, sem cobrança automática.{% endblock %}
+{% block meta_description %}Conheça os planos Gratuito, Pro e Ultra do AjudAI Docente. Personalize modelos acadêmicos e exporte em DOCX ou PDF.{% endblock %}
 {% block content %}
 <div class="container py-5">
   <header class="pricing-header text-center mx-auto">
     <span class="section-kicker">PLANOS TRANSPARENTES</span>
     <h1>Escolha a capacidade adequada à sua rotina</h1>
-    <p>Comece sem cartão e assine somente quando precisar de mais créditos, disciplinas e fontes.</p>
-    <div class="credit-explainer">
-      <strong>1 Plano de Ensino = 2 créditos</strong>
-      <span>Se uma geração falhar tecnicamente após a reserva, os créditos são devolvidos.</span>
-    </div>
+    <p>Comece sem cartão e assine somente quando precisar de mais gerações, modelos e referências.</p>
+    <div class="credit-explainer"><strong>1 documento gerado = 2 créditos</strong><span>Inclusive, 1 Plano de Ensino = 2 créditos. Se uma geração falhar tecnicamente após a reserva, os créditos são devolvidos.</span></div>
   </header>
 
   <div class="row g-4 mt-4">
@@ -20,33 +17,21 @@
           {% if plan.code == 'PRO' %}<span class="badge text-bg-warning align-self-start mb-2">Mais escolhido</span>{% endif %}
           <h2>{{ plan.name }}</h2>
           <div class="display-6 price-label">{{ plan.price_label }}</div>
-          <p class="text-muted plan-credit-line">
-            {% if plan.initial_credits %}
-              {{ plan.initial_credits }} créditos concedidos uma única vez
-            {% else %}
-              {{ plan.monthly_credits }} créditos renovados mensalmente
-            {% endif %}
-          </p>
+          <p class="text-muted plan-credit-line">{% if plan.initial_credits %}{{ plan.initial_credits }} créditos concedidos uma única vez{% else %}{{ plan.monthly_credits }} créditos renovados mensalmente{% endif %}</p>
           <ul class="plan-features">
-            <li><strong>{{ plan.institution_limit }}</strong> instituição(ões)</li>
-            <li><strong>{{ plan.discipline_limit }}</strong> disciplina(s)</li>
-            <li><strong>{{ plan.source_limit }}</strong> fonte(s)</li>
-            <li><strong>{{ plan.daily_limit }}</strong> créditos por dia</li>
+            <li><strong>{{ plan.source_limit }}</strong> modelos e referências armazenados</li>
+            <li><strong>{{ plan.daily_limit }}</strong> créditos disponíveis por dia</li>
+            <li>Modelos DOCX ou PDF</li>
+            <li>Referências PDF, DOCX ou TXT</li>
+            <li>Editor de títulos, textos e novas seções</li>
+            <li>Exportação em DOCX e PDF</li>
             <li>{% if plan.watermark %}Identificação do plano Gratuito no rodapé{% else %}Sem identificação do plano Gratuito{% endif %}</li>
-            <li>DOCX editável e histórico protegido</li>
           </ul>
           {% if plan.code == 'FREE' %}
-            {% if user.is_authenticated %}
-              <a class="btn btn-outline-primary mt-auto" href="{% url 'dashboard' %}">Acessar o painel</a>
-            {% else %}
-              <a class="btn btn-primary mt-auto" href="{% url 'register' %}">Começar gratuitamente</a>
-            {% endif %}
+            {% if user.is_authenticated %}<a class="btn btn-outline-primary mt-auto" href="{% url 'dashboard' %}">Acessar o painel</a>{% else %}<a class="btn btn-primary mt-auto" href="{% url 'register' %}">Começar gratuitamente</a>{% endif %}
             <small class="text-muted mt-2 text-center">Sem cartão e sem cobrança automática.</small>
           {% elif user.is_authenticated %}
-            <form method="post" action="{% url 'billing_start' plan.code %}" class="mt-auto">
-              {% csrf_token %}
-              <button class="btn btn-warning w-100" type="submit">Assinar {{ plan.name }}</button>
-            </form>
+            <form method="post" action="{% url 'billing_start' plan.code %}" class="mt-auto">{% csrf_token %}<button class="btn btn-warning w-100" type="submit">Assinar {{ plan.name }}</button></form>
           {% else %}
             <a class="btn btn-warning mt-auto" href="{% url 'register' %}?next={% url 'subscription' %}">Criar conta e assinar</a>
           {% endif %}
@@ -57,37 +42,17 @@
 
   <section class="card payment-card p-4 p-lg-5 mt-5">
     <div class="row g-4">
-      <div class="col-lg-7">
-        <span class="section-kicker">PAGAMENTO E CONTROLE</span>
-        <h2 class="h3">Assinatura mensal sem permanência obrigatória</h2>
-        <p>Os planos Pro e Ultra são processados em ambiente seguro pelo Asaas. A ativação ocorre após a confirmação do pagamento.</p>
-        <p class="mb-0">O cancelamento interrompe renovações futuras e preserva o acesso até o fim do período já pago.</p>
-      </div>
-      <div class="col-lg-5">
-        <div class="institutional-box">
-          <strong>Precisa atender uma instituição ou equipe?</strong>
-          <p>Converse com o AI_RN_LAB sobre volume, implantação e necessidades específicas.</p>
-          <a href="mailto:{{ support_email }}?subject=Plano%20institucional%20AjudAI%20Docente">Solicitar contato institucional</a>
-        </div>
-      </div>
+      <div class="col-lg-7"><span class="section-kicker">PAGAMENTO E CONTROLE</span><h2 class="h3">Assinatura mensal sem permanência obrigatória</h2><p>Os planos Pro e Ultra são processados em ambiente seguro pelo Asaas. A ativação ocorre após a confirmação do pagamento.</p><p class="mb-0">O cancelamento interrompe renovações futuras e preserva o acesso até o fim do período já pago.</p></div>
+      <div class="col-lg-5"><div class="institutional-box"><strong>Precisa atender uma instituição ou equipe?</strong><p>Converse com o AI_RN_LAB sobre volume, implantação e necessidades específicas.</p><a href="mailto:{{ support_email }}?subject=Plano%20institucional%20AjudAI%20Docente">Solicitar contato institucional</a></div></div>
     </div>
   </section>
 
   <section class="faq-container mx-auto mt-5" aria-labelledby="faq-planos">
     <h2 id="faq-planos" class="text-center">Dúvidas sobre créditos e assinatura</h2>
     <div class="faq-list mt-4">
-      <details>
-        <summary>Os créditos não utilizados acumulam?</summary>
-        <p>Os 5 créditos gratuitos são concedidos uma única vez. Nos planos pagos, a carteira recebe a franquia mensal conforme o ciclo de assinatura.</p>
-      </details>
-      <details>
-        <summary>Posso voltar ao plano Gratuito?</summary>
-        <p>Você pode cancelar a renovação. O acesso pago permanece até o fim do período confirmado, respeitando as regras descritas nos Termos de Uso.</p>
-      </details>
-      <details>
-        <summary>O pagamento altera meus documentos existentes?</summary>
-        <p>Não. Documentos já gerados continuam no histórico da conta. O plano define os limites e créditos disponíveis para novas operações.</p>
-      </details>
+      <details><summary>Os créditos não utilizados acumulam?</summary><p>Os 5 créditos gratuitos são concedidos uma única vez. Nos planos pagos, a carteira recebe a franquia mensal conforme o ciclo de assinatura.</p></details>
+      <details><summary>Posso voltar ao plano Gratuito?</summary><p>Você pode cancelar a renovação. O acesso pago permanece até o fim do período confirmado, respeitando os Termos de Uso.</p></details>
+      <details><summary>O pagamento altera meus documentos existentes?</summary><p>Não. Modelos, referências e documentos já criados permanecem associados à sua conta.</p></details>
     </div>
   </section>
 </div>

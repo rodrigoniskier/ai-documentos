@@ -1,17 +1,24 @@
 from django.urls import path
 
-from . import billing_views, views
+from . import billing_views, document_views, public_views, views
 
 urlpatterns = [
     path("", views.home, name="home"),
     path("health/", views.health, name="health"),
     path("robots.txt", views.robots, name="robots"),
     path("sitemap.xml", views.sitemap, name="sitemap"),
-    path("social-card.png", views.social_card, name="social_card"),
+    path("social-card.png", public_views.social_card, name="social_card"),
     path("cadastro/", views.register, name="register"),
     path("entrar/", views.SignInView.as_view(), name="login"),
     path("sair/", views.SignOutView.as_view(), name="logout"),
-    path("painel/", views.dashboard, name="dashboard"),
+    path("painel/", document_views.workspace, name="dashboard"),
+    path("workspace/", document_views.workspace, name="workspace"),
+    path("painel-legado/", views.dashboard, name="legacy_dashboard"),
+    path("workspace/novo/", document_views.project_new, name="project_new"),
+    path("workspace/documentos/", document_views.project_history, name="project_history"),
+    path("workspace/documentos/<int:pk>/", document_views.project_edit, name="project_edit"),
+    path("workspace/documentos/<int:pk>/docx/", document_views.project_download_docx, name="project_download_docx"),
+    path("workspace/documentos/<int:pk>/pdf/", document_views.project_download_pdf, name="project_download_pdf"),
     path("academico/", views.academics, name="academics"),
     path("academico/instituicao/", views.institution_create, name="institution_create"),
     path("academico/curso/", views.course_create, name="course_create"),
@@ -20,32 +27,12 @@ urlpatterns = [
     path("documentos/", views.document_history, name="document_history"),
     path("documentos/novo/", views.generate_document, name="generate_document"),
     path("documentos/<int:pk>/", views.document_detail, name="document_detail"),
-    path(
-        "documentos/<int:pk>/download/",
-        views.document_download,
-        name="document_download",
-    ),
+    path("documentos/<int:pk>/download/", views.document_download, name="document_download"),
     path("assinatura/", billing_views.subscription_page, name="subscription"),
-    path(
-        "assinatura/checkout/<str:plan_code>/",
-        billing_views.billing_start,
-        name="billing_start",
-    ),
-    path(
-        "assinatura/retorno/<str:result>/",
-        billing_views.billing_result,
-        name="billing_result",
-    ),
-    path(
-        "assinatura/cancelar/",
-        billing_views.billing_cancel,
-        name="billing_cancel",
-    ),
-    path(
-        "api/billing/asaas/webhook/",
-        billing_views.asaas_webhook,
-        name="asaas_webhook",
-    ),
+    path("assinatura/checkout/<str:plan_code>/", billing_views.billing_start, name="billing_start"),
+    path("assinatura/retorno/<str:result>/", billing_views.billing_result, name="billing_result"),
+    path("assinatura/cancelar/", billing_views.billing_cancel, name="billing_cancel"),
+    path("api/billing/asaas/webhook/", billing_views.asaas_webhook, name="asaas_webhook"),
     path("precos/", views.pricing, name="pricing"),
     path("termos/", views.legal, {"kind": "terms"}, name="terms"),
     path("privacidade/", views.legal, {"kind": "privacy"}, name="privacy"),
