@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% block title %}{{ title }} — RN DocumentAI{% endblock %}
+{% block meta_description %}{% if title == 'Criar conta' %}Crie sua conta no RN DocumentAI e receba 5 créditos gratuitos para gerar Planos de Ensino editáveis.{% else %}Acesse sua conta do RN DocumentAI com segurança.{% endif %}{% endblock %}
+{% block meta_robots %}{% if title == 'Criar conta' %}index,follow{% else %}noindex,nofollow{% endif %}{% endblock %}
+{% block content %}
+<div class="container py-5">
+  <div class="auth-layout {% if title != 'Criar conta' %}auth-layout-single{% endif %}">
+    <section class="card auth-card p-4 p-lg-5">
+      <span class="section-kicker">{% if title == 'Criar conta' %}COMECE GRATUITAMENTE{% else %}ACESSO SEGURO{% endif %}</span>
+      <h1 class="h2 mb-2">{{ title }}</h1>
+      {% if title == 'Criar conta' %}
+        <p class="text-muted">Receba 5 créditos gratuitos, sem cartão e sem cobrança automática.</p>
+      {% elif title == 'Entrar' %}
+        <p class="text-muted">Entre com o e-mail utilizado no cadastro.</p>
+      {% endif %}
+      <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
+        {{ form.as_p }}
+        {% if title == 'Criar conta' %}
+          <p class="small text-muted">Ao criar a conta, você confirma a leitura dos <a href="{% url 'terms' %}" target="_blank" rel="noopener">Termos de Uso</a> e do <a href="{% url 'privacy' %}" target="_blank" rel="noopener">Aviso de Privacidade</a>.</p>
+        {% endif %}
+        <button class="btn btn-warning btn-lg w-100" type="submit">{% if title == 'Criar conta' %}Criar conta e receber créditos{% elif title == 'Entrar' %}Entrar{% else %}Continuar{% endif %}</button>
+      </form>
+      {% if title == 'Entrar' %}
+        <p class="small text-muted text-center mt-3 mb-0">Ainda não tem conta? <a href="{% url 'register' %}">Comece gratuitamente</a>.</p>
+      {% endif %}
+    </section>
+
+    {% if title == 'Criar conta' %}
+      <aside class="auth-benefits">
+        <span class="section-kicker">O QUE VOCÊ RECEBE</span>
+        <h2>Uma base editável para sua revisão.</h2>
+        <ul class="benefit-list">
+          <li><span>✓</span><div><strong>5 créditos gratuitos</strong><small>Comece sem informar cartão.</small></div></li>
+          <li><span>✓</span><div><strong>Contexto reutilizável</strong><small>Cadastre instituição, curso e disciplina uma vez.</small></div></li>
+          <li><span>✓</span><div><strong>Fontes privadas</strong><small>Use PDF ou DOCX quando precisar.</small></div></li>
+          <li><span>✓</span><div><strong>Download em DOCX</strong><small>Revise e ajuste antes da utilização.</small></div></li>
+        </ul>
+      </aside>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
