@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+{% block title %}Assinatura — RN DocumentAI{% endblock %}
+{% block content %}
+<div class="container py-5">
+  <div class="d-flex flex-column flex-md-row justify-content-between gap-3 align-items-md-center">
+    <div>
+      <h1>Assinatura</h1>
+      <p class="text-muted mb-0">Gerencie seu plano, seus créditos e a renovação mensal.</p>
+    </div>
+    <div class="card px-4 py-3">
+      <span class="text-muted">Plano atual</span>
+      <strong class="fs-4">{{ user.subscription.plan.name }}</strong>
+      <span>{{ user.wallet.balance }} créditos disponíveis</span>
+    </div>
+  </div>
+
+  {% if not billing_enabled %}
+    <div class="alert alert-warning mt-4">
+      As assinaturas online estão temporariamente indisponíveis. O plano Gratuito e os documentos existentes continuam acessíveis normalmente.
+    </div>
+  {% endif %}
+
+  {% if billing_subscription %}
+    <div class="card p-4 mt-4">
+      <h2 class="h4">Situação da cobrança</h2>
+      <div class="row g-3">
+        <div class="col-md-4"><strong>Plano:</strong><br>{{ billing_subscription.plan.name }}</div>
+        <div class="col-md-4"><strong>Status:</strong><br>{{ billing_subscription.get_status_display }}</div>
+        <div class="col-md-4"><strong>Período atual:</strong><br>
+          {% if billing_subscription.current_period_end %}
+            até {{ billing_subscription.current_period_end|date:'d/m/Y' }}
+          {% else %}
+            aguardando confirmação
+          {% endif %}
+        </div>
+      </div>
+      {% if billing_subscription.status == 'active' or billing_subscription.status == 'past_due' %}
+        <form method="post" action="{% url 'billing_cancel' %}" class="mt-3" onsubmit="return confirm('Cancelar a renovação mensal? O acesso permanecerá até o fim do período já pago.');">
+          {% csrf_token %}
+          <button class="btn btn-outline-danger" type="submit">Cancelar renovação</button>
+        </form>
+      {% endif %}
+    </div>
+  {% endif %}
+
+  <h2 class="h3 mt-5">Escolha seu plano</h2>
+  <div class="row g-4 mt-1">
+    {% for plan in paid_plans %}
+      <div class="col-md-6">
+        <div class="card h-100 p-4 {% if plan.code == 'PRO' %}border-warning shadow-sm{% endif %}">
+          <h3>{{ plan.name }}</h3>
+          <div class="display-6">{{ plan.price_label }}</div>
+          <p class="text-muted">Cobrança mensal recorrente processada pelo Asaas.</p>
+          <ul class="mt-3">
+            <li>{{ plan.monthly_credits }} créditos mensais</li>
+            <li>{{ plan.institution_limit }} instituição(ões)</li>
+            <li>{{ plan.discipline_limit }} disciplina(s)</li>
+            <li>{{ plan.source_limit }} fonte(s)</li>
+            <li>Sem marca do plano Gratuito</li>
+          </ul>
+          <form method="post" action="{% url 'billing_start' plan.code %}" class="mt-auto">
+            {% csrf_token %}
+            <button class="btn btn-warning w-100" type="submit" {% if not billing_enabled %}disabled{% endif %}>
+              Assinar {{ plan.name }}
+            </button>
+          </form>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+
+  <div class="alert alert-light border mt-4 small">
+    Ao assinar, você concorda com os <a href="{% url 'terms' %}" target="_blank" rel="noopener">Termos de Uso</a>. A ativação ocorre após a confirmação segura do pagamento. O cancelamento interrompe as renovações futuras e preserva o acesso até o fim do período pago.
+  </div>
+
+  {% if recent_checkouts %}
+    <div class="card p-4 mt-5">
+      <h2 class="h4">Operações recentes</h2>
+      <div class="table-responsive">
+        <table class="table align-middle mb-0">
+          <thead><tr><th>Data</th><th>Plano</th><th>Status</th><th>Valor</th></tr></thead>
+          <tbody>
+            {% for checkout in recent_checkouts %}
+              <tr>
+                <td>{{ checkout.created_at|date:'d/m/Y H:i' }}</td>
+                <td>{{ checkout.plan.name }}</td>
+                <td>{{ checkout.get_status_display }}</td>
+                <td>R$ {{ checkout.amount|floatformat:2 }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}
