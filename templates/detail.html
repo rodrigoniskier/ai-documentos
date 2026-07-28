@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+{% block title %}{{ document.title }} — RN DocumentAI{% endblock %}
+{% block meta_robots %}noindex,nofollow{% endblock %}
+{% block content %}
+<div class="container py-5">
+  <header class="result-header">
+    <div>
+      <span class="section-kicker">DOCUMENTO GERADO</span>
+      <h1>{{ document.title }}</h1>
+      <p class="text-muted mb-0">{{ document.code }} · {{ document.created_at|date:'d/m/Y H:i' }}</p>
+    </div>
+    <div class="result-actions">
+      <a class="btn btn-primary btn-lg" href="{% url 'document_download' document.pk %}">Baixar DOCX</a>
+      <a class="btn btn-outline-primary" href="{% url 'generate_document' %}">Gerar outro</a>
+    </div>
+  </header>
+
+  <div class="review-banner mt-4" role="note">
+    <span aria-hidden="true">✓</span>
+    <div>
+      <strong>Documento pronto para revisão.</strong>
+      <p>Leia o conteúdo, ajuste o DOCX e valide a adequação acadêmica e institucional antes de utilizá-lo.</p>
+    </div>
+  </div>
+
+  <div class="result-layout mt-4">
+    <aside class="result-summary">
+      <div class="card p-4">
+        <span class="text-muted">Disciplina</span>
+        <strong>{{ document.generation.discipline.name }}</strong>
+        <hr>
+        <span class="text-muted">Curso</span>
+        <strong>{{ document.generation.discipline.course.name }}</strong>
+        <hr>
+        <span class="text-muted">Instituição</span>
+        <strong>{{ document.generation.discipline.institution.name }}</strong>
+        <a class="btn btn-outline-primary mt-4" href="{% url 'document_history' %}">Voltar ao histórico</a>
+      </div>
+    </aside>
+
+    <div class="result-content">
+      {% for section in document_sections %}
+        <section class="card result-section p-4" aria-labelledby="secao-{{ forloop.counter }}">
+          <h2 id="secao-{{ forloop.counter }}" class="h4">{{ section.title }}</h2>
+          {% if section.kind == 'text' %}
+            <p class="mb-0 preserve-lines">{{ section.text }}</p>
+          {% elif section.kind == 'list' %}
+            {% if section.items %}
+              <ul class="content-list mb-0">
+                {% for item in section.items %}<li>{{ item }}</li>{% endfor %}
+              </ul>
+            {% else %}
+              <p class="text-muted mb-0">Nenhum conteúdo informado.</p>
+            {% endif %}
+          {% elif section.kind == 'units' %}
+            {% if section.units %}
+              <div class="unit-list">
+                {% for unit in section.units %}
+                  <article class="unit-card">
+                    <div class="unit-heading">
+                      <h3>{{ unit.title }}</h3>
+                      {% if unit.workload %}<span>{{ unit.workload }}</span>{% endif %}
+                    </div>
+                    {% if unit.items %}
+                      <ul>{% for item in unit.items %}<li>{{ item }}</li>{% endfor %}</ul>
+                    {% endif %}
+                  </article>
+                {% endfor %}
+              </div>
+            {% else %}
+              <p class="text-muted mb-0">Nenhum conteúdo programático informado.</p>
+            {% endif %}
+          {% endif %}
+        </section>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="download-cta mt-4">
+    <div>
+      <strong>Continue a edição no seu editor de texto.</strong>
+      <p class="mb-0">O arquivo DOCX preserva o documento para os ajustes finais.</p>
+    </div>
+    <a class="btn btn-warning btn-lg" href="{% url 'document_download' document.pk %}">Baixar {{ document.code }}.docx</a>
+  </div>
+</div>
+{% endblock %}
