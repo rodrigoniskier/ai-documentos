@@ -21,10 +21,55 @@ from .services import refund_credits, reserve_credits
 
 
 GENERATION_COST = 2
+ACTIVE_PROJECT_STATUSES = ("draft", "processing", "ready")
 
 
 def _upload_count(user):
-    return user.document_templates.count() + user.reference_documents.count()
+    """Conta somente arquivos ligados a projetos utilizáveis.
+
+    Tentativas que falharam não devem consumir a franquia do plano.
+    """
+    active_projects = user.document_projects.filter(status__in=ACTIVE_PROJECT_STATUSES)
+    template_count = active_projects.values("template_id").distinct().count()
+    through = DocumentProject.references.through
+    reference_count = (
+        through.objects.filter(
+            documentproject_id__in=active_projects.values_list("id", flat=True)
+        )
+        .values("referencedocument_id")
+        .distinct()
+        .count()
+    )
+    return template_count + reference_count
+
+
+def _delete_file(file_field):
+    if not file_field or not getattr(file_field, "name", ""):
+        return
+    try:
+        file_field.delete(save=False)
+    except Exception:
+        # A limpeza do banco não deve falhar por indisponibilidade momentânea
+        # do armazenamento de arquivos.
+        pass
+
+
+def _discard_failed_project(project):
+    """Remove projeto, modelo e referências exclusivos de uma tentativa falha."""
+    references = list(project.references.all())
+    template = project.template
+    project.references.clear()
+    _delete_file(project.logo)
+    project.delete()
+
+    if not template.projects.exists():
+        _delete_file(template.file)
+        template.delete()
+
+    for reference in references:
+        if not reference.documentproject_set.exists():
+            _delete_file(reference.file)
+            reference.delete()
 
 
 def _safe_filename(value):
@@ -62,37 +107,39 @@ def project_new(request):
                 "O envio ultrapassa o limite de modelos e referências do seu plano.",
             )
         else:
-            template_file = form.cleaned_data["template_file"]
-            template = DocumentTemplate.objects.create(
-                owner=request.user,
-                title=form.cleaned_data["template_title"] or Path(template_file.name).stem,
-                document_type=form.cleaned_data["document_type"],
-                file=template_file,
-            )
-            process_template(template)
-            project = DocumentProject.objects.create(
-                owner=request.user,
-                template=template,
-                document_type=form.cleaned_data["document_type"],
-                title=form.cleaned_data["title"],
-                course_context=form.cleaned_data["course_context"],
-                institution_context=form.cleaned_data["institution_context"],
-                field_values=form.cleaned_data["extra_fields_json"],
-                logo=form.cleaned_data.get("logo"),
-                status="processing",
-            )
-            for uploaded in reference_files:
-                reference = ReferenceDocument.objects.create(
-                    owner=request.user,
-                    title=Path(uploaded.name).stem,
-                    file=uploaded,
-                )
-                process_reference(reference)
-                project.references.add(reference)
-
+            template = None
+            project = None
             key = str(uuid.uuid4())
             reserved = False
             try:
+                template_file = form.cleaned_data["template_file"]
+                template = DocumentTemplate.objects.create(
+                    owner=request.user,
+                    title=form.cleaned_data["template_title"] or Path(template_file.name).stem,
+                    document_type=form.cleaned_data["document_type"],
+                    file=template_file,
+                )
+                process_template(template)
+                project = DocumentProject.objects.create(
+                    owner=request.user,
+                    template=template,
+                    document_type=form.cleaned_data["document_type"],
+                    title=form.cleaned_data["title"],
+                    course_context=form.cleaned_data["course_context"],
+                    institution_context=form.cleaned_data["institution_context"],
+                    field_values=form.cleaned_data["extra_fields_json"],
+                    logo=form.cleaned_data.get("logo"),
+                    status="processing",
+                )
+                for uploaded in reference_files:
+                    reference = ReferenceDocument.objects.create(
+                        owner=request.user,
+                        title=Path(uploaded.name).stem,
+                        file=uploaded,
+                    )
+                    process_reference(reference)
+                    project.references.add(reference)
+
                 reserve_credits(
                     request.user,
                     GENERATION_COST,
@@ -124,16 +171,22 @@ def project_new(request):
                 )
                 return redirect("project_edit", pk=project.pk)
             except Exception as exc:
-                project.status = "failed"
-                project.error = str(exc)[:500]
-                project.save(update_fields=["status", "error", "updated_at"])
-                if reserved:
+                if project is not None:
+                    project.status = "failed"
+                    project.error = str(exc)[:500]
+                    project.save(update_fields=["status", "error", "updated_at"])
+                if reserved and project is not None:
                     refund_credits(
                         request.user,
                         GENERATION_COST,
                         idempotency_key=f"document-project-refund:{key}",
                         reference=f"project:{project.pk}",
                     )
+                if project is not None:
+                    _discard_failed_project(project)
+                elif template is not None:
+                    _delete_file(template.file)
+                    template.delete()
                 messages.error(request, f"Não foi possível gerar o documento: {exc}")
     return render(
         request,
