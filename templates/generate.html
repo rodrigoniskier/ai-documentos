@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+{% block title %}Gerar Plano de Ensino — RN DocumentAI{% endblock %}
+{% block meta_robots %}noindex,nofollow{% endblock %}
+{% block content %}
+<div class="container py-5">
+  <div class="generate-layout">
+    <section class="card generate-card p-4 p-lg-5" aria-labelledby="gerar-titulo">
+      <span class="section-kicker">NOVA GERAÇÃO</span>
+      <h1 id="gerar-titulo">Gerar Plano de Ensino</h1>
+      <p class="text-muted">Configure a oferta acadêmica. A IA organizará uma primeira versão para sua revisão.</p>
+
+      <div class="alert alert-info generation-cost">
+        <strong>Esta geração utiliza 2 créditos.</strong>
+        <span>Saldo atual: {{ user.wallet.balance }} crédito{{ user.wallet.balance|pluralize }}.</span>
+      </div>
+
+      <form method="post" id="generation-form" novalidate>
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button class="btn btn-warning btn-lg w-100" id="generation-submit" type="submit">
+          <span class="submit-label">Gerar documento</span>
+          <span class="submit-loading d-none">
+            <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+            Gerando seu Plano de Ensino…
+          </span>
+        </button>
+      </form>
+
+      <div id="generation-status" class="generation-status mt-4" role="status" aria-live="polite" hidden>
+        <div class="status-icon"><span class="spinner-border text-warning" aria-hidden="true"></span></div>
+        <div>
+          <strong>Estamos organizando o documento.</strong>
+          <p class="mb-0">A geração pode levar alguns instantes. Não feche nem atualize esta página.</p>
+        </div>
+      </div>
+      <noscript><p class="alert alert-warning mt-3">Mantenha esta página aberta após enviar o formulário.</p></noscript>
+    </section>
+
+    <aside class="generate-aside">
+      <div class="card p-4">
+        <h2 class="h5">Antes de gerar</h2>
+        <ul class="check-list">
+          <li>Confira a disciplina selecionada.</li>
+          <li>Informe corretamente período e semanas.</li>
+          <li>Use apenas fontes que você possa utilizar.</li>
+          <li>Descreva preferências realmente necessárias.</li>
+        </ul>
+      </div>
+      <div class="responsibility-note mt-3">
+        <strong>Revisão docente obrigatória</strong>
+        <p>O documento é uma base editável. Verifique conteúdo, referências e adequação institucional antes do uso.</p>
+      </div>
+    </aside>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+(() => {
+  const form = document.getElementById("generation-form");
+  const button = document.getElementById("generation-submit");
+  const status = document.getElementById("generation-status");
+  if (!form || !button || !status) return;
+
+  let submitted = false;
+  form.addEventListener("submit", (event) => {
+    if (!form.checkValidity()) {
+      event.preventDefault();
+      event.stopPropagation();
+      form.classList.add("was-validated");
+      form.querySelector(":invalid")?.focus();
+      return;
+    }
+    if (submitted) {
+      event.preventDefault();
+      return;
+    }
+    submitted = true;
+    button.disabled = true;
+    button.setAttribute("aria-disabled", "true");
+    form.setAttribute("aria-busy", "true");
+    button.querySelector(".submit-label").classList.add("d-none");
+    button.querySelector(".submit-loading").classList.remove("d-none");
+    status.hidden = false;
+    status.scrollIntoView({behavior: "smooth", block: "nearest"});
+  });
+})();
+</script>
+{% endblock %}
