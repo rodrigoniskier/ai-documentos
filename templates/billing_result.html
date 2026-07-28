@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% block title %}Retorno do pagamento — RN DocumentAI{% endblock %}
+{% block content %}
+<div class="container py-5">
+  <div class="card p-5 mx-auto" style="max-width: 720px;">
+    {% if result == 'success' %}
+      <h1>Pagamento enviado</h1>
+      <p class="lead">O Asaas recebeu a operação. A ativação acontece somente após a confirmação segura pelo Webhook.</p>
+      <p>Isso costuma ocorrer em instantes. Atualize a página de assinatura para acompanhar o status.</p>
+    {% elif result == 'cancel' %}
+      <h1>Checkout cancelado</h1>
+      <p class="lead">Nenhuma alteração foi feita no seu plano.</p>
+    {% else %}
+      <h1>Checkout expirado</h1>
+      <p class="lead">O link perdeu a validade. Gere um novo checkout na página de assinatura.</p>
+    {% endif %}
+    <a class="btn btn-primary mt-3" href="{% url 'subscription' %}">Voltar para assinatura</a>
+  </div>
+</div>
+{% endblock %}
