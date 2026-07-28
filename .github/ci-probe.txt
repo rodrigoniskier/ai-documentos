@@ -1,0 +1,1 @@
+Execução temporária para diagnóstico do CI após a atualização da identidade AjudAI Docente.
