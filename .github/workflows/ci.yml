@@ -17,9 +17,21 @@ jobs:
       - name: Validate required root files
         run: |
           test -f build.sh
+          test -f Dockerfile
+          test -f docker-entrypoint.sh
           test -f requirements.txt
           test -f manage.py
           bash -n build.sh
+          bash -n docker-entrypoint.sh
+      - name: Install document rendering tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            libreoffice-writer \
+            fonts-crosextra-carlito \
+            fonts-crosextra-caladea \
+            fonts-liberation \
+            poppler-utils
       - name: Install dependencies
         run: python -m pip install -r requirements.txt
       - name: Validate committed migrations
@@ -41,10 +53,18 @@ jobs:
         shell: bash
         run: |
           set -o pipefail
-          python manage.py test platform_app.tests platform_app.test_document_workflow platform_app.test_credit_limits platform_app.test_template_fidelity --verbosity=2 2>&1 | tee core-tests.log
+          python manage.py test \
+            platform_app.tests \
+            platform_app.test_document_workflow \
+            platform_app.test_credit_limits \
+            platform_app.test_template_fidelity \
+            platform_app.test_strict_template_pipeline \
+            --verbosity=2 2>&1 | tee core-tests.log
         env:
           DJANGO_SECRET_KEY: ci-secret
           DEBUG: "true"
+          DOCUMENT_VISUAL_QA_ENABLED: "false"
+          LIBREOFFICE_BINARY: /usr/bin/soffice
       - name: Run billing tests
         if: always()
         shell: bash
@@ -54,6 +74,9 @@ jobs:
         env:
           DJANGO_SECRET_KEY: ci-secret
           DEBUG: "true"
+      - name: Build Docker runtime
+        if: success()
+        run: docker build -t ajudai-docente-ci .
       - name: Upload test diagnostics
         if: always()
         uses: actions/upload-artifact@v4
