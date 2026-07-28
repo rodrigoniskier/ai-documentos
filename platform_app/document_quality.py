@@ -36,6 +36,24 @@ def _unique_cells(row):
     return result
 
 
+def _structural_header_text(cell):
+    """Retorna somente rótulos visuais que definem a geometria da tabela.
+
+    Valores editáveis e rótulos de campos em caixa mista não participam da
+    assinatura. Assim, ``Disciplina | Imunologia`` pode ser personalizado sem
+    ser confundido com cabeçalhos imutáveis como ``UNIDADE | C/H | TÓPICOS``.
+    """
+
+    text = " ".join(cell.text.split()).strip()
+    if not text or "{{" in text or len(text) > 160:
+        return ""
+    letters = [character for character in text if character.isalpha()]
+    if not letters:
+        return ""
+    uppercase_ratio = sum(character.isupper() for character in letters) / len(letters)
+    return text if uppercase_ratio >= 0.88 else ""
+
+
 def _table_signature(document):
     signatures = []
     for table in document.tables:
@@ -44,7 +62,9 @@ def _table_signature(document):
             {
                 "rows": len(table.rows),
                 "columns": len(first_row),
-                "header": [cell.text.strip() for cell in first_row],
+                "structural_header": [
+                    _structural_header_text(cell) for cell in first_row
+                ],
             }
         )
     return signatures
@@ -54,8 +74,20 @@ def _package_counts(payload):
     with zipfile.ZipFile(io.BytesIO(bytes(payload))) as package:
         names = package.namelist()
     return {
-        "headers": len([name for name in names if name.startswith("word/header") and name.endswith(".xml")]),
-        "footers": len([name for name in names if name.startswith("word/footer") and name.endswith(".xml")]),
+        "headers": len(
+            [
+                name
+                for name in names
+                if name.startswith("word/header") and name.endswith(".xml")
+            ]
+        ),
+        "footers": len(
+            [
+                name
+                for name in names
+                if name.startswith("word/footer") and name.endswith(".xml")
+            ]
+        ),
         "media": len([name for name in names if name.startswith("word/media/")]),
         "styles": int("word/styles.xml" in names),
         "numbering": int("word/numbering.xml" in names),
@@ -75,11 +107,18 @@ def audit_docx_structure(template_bytes, output_bytes):
     if len(template_tables) != len(output_tables):
         issues.append("A quantidade de tabelas foi alterada.")
     else:
-        for index, (expected, actual) in enumerate(zip(template_tables, output_tables)):
-            if expected["rows"] != actual["rows"] or expected["columns"] != actual["columns"]:
+        for index, (expected, actual) in enumerate(
+            zip(template_tables, output_tables)
+        ):
+            if (
+                expected["rows"] != actual["rows"]
+                or expected["columns"] != actual["columns"]
+            ):
                 issues.append(f"A geometria da tabela {index + 1} foi alterada.")
-            if expected["header"] != actual["header"]:
-                issues.append(f"O cabeçalho estrutural da tabela {index + 1} foi alterado.")
+            if expected["structural_header"] != actual["structural_header"]:
+                issues.append(
+                    f"O cabeçalho estrutural da tabela {index + 1} foi alterado."
+                )
 
     expected_package = _package_counts(template_bytes)
     actual_package = _package_counts(output_bytes)
@@ -97,7 +136,11 @@ def audit_docx_structure(template_bytes, output_bytes):
         passed=not issues,
         score=max(0, 100 - 18 * len(issues)),
         issues=issues,
-        summary="Estrutura DOCX preservada." if not issues else "Foram detectadas alterações estruturais.",
+        summary=(
+            "Estrutura DOCX preservada."
+            if not issues
+            else "Foram detectadas alterações estruturais."
+        ),
     )
 
 
@@ -107,7 +150,9 @@ def _render_pdf_pages(pdf_bytes, *, dpi=110, max_pages=8):
     matrix = fitz.Matrix(dpi / 72, dpi / 72)
     for page in list(document)[:max_pages]:
         pixmap = page.get_pixmap(matrix=matrix, alpha=False)
-        images.append(Image.open(io.BytesIO(pixmap.tobytes("png"))).convert("RGB"))
+        images.append(
+            Image.open(io.BytesIO(pixmap.tobytes("png"))).convert("RGB")
+        )
     return images, document.page_count
 
 
@@ -121,7 +166,9 @@ def _contact_sheet(images, title):
         thumbnail = image.resize((thumb_width, height))
         canvas = Image.new("RGB", (thumb_width, height + 42), "white")
         canvas.paste(thumbnail, (0, 42))
-        ImageDraw.Draw(canvas).text((12, 12), f"{title} - página {index}", fill="black")
+        ImageDraw.Draw(canvas).text(
+            (12, 12), f"{title} - página {index}", fill="black"
+        )
         prepared.append(canvas)
     sheet_height = sum(image.height for image in prepared)
     sheet = Image.new("RGB", (thumb_width, sheet_height), "white")
@@ -146,17 +193,23 @@ def _local_pdf_report(template_pdf, output_pdf):
     issues = []
     if output_pages > template_pages + allowed_extra:
         issues.append(
-            f"A paginação cresceu de {template_pages} para {output_pages} páginas, acima da tolerância."
+            f"A paginação cresceu de {template_pages} para {output_pages} páginas, "
+            "acima da tolerância."
         )
     if output_pages < max(1, template_pages - 1):
         issues.append(
-            f"A paginação caiu de {template_pages} para {output_pages} páginas, indicando possível perda de conteúdo."
+            f"A paginação caiu de {template_pages} para {output_pages} páginas, "
+            "indicando possível perda de conteúdo."
         )
     return FidelityReport(
         passed=not issues,
         score=100 if not issues else 65,
         issues=issues,
-        summary="Paginação compatível." if not issues else "Paginação incompatível com o modelo.",
+        summary=(
+            "Paginação compatível."
+            if not issues
+            else "Paginação incompatível com o modelo."
+        ),
         template_pages=template_pages,
         output_pages=output_pages,
     )
@@ -194,18 +247,20 @@ def inspect_visual_fidelity(template_pdf, output_pdf):
             "additionalProperties": False,
         }
         response = client.responses.create(
-            model=getattr(settings, "DOCUMENT_VISUAL_QA_MODEL", settings.OPENAI_MODEL),
+            model=getattr(
+                settings, "DOCUMENT_VISUAL_QA_MODEL", settings.OPENAI_MODEL
+            ),
             store=False,
             input=[
                 {
                     "role": "system",
                     "content": (
                         "Compare visualmente um modelo DOCX e o documento personalizado. "
-                        "Ignore mudanças esperadas no conteúdo textual. Avalie fidelidade de logo, "
-                        "cabeçalho, rodapé, cores, fontes, hierarquia, tabelas, larguras de colunas, "
-                        "alinhamentos, espaçamentos, quebras de página e ausência de duplicações. "
-                        "Reprove se a estrutura foi reconstruída, se uma seção apareceu em células "
-                        "erradas ou se o PDF deixou de reproduzir o DOCX."
+                        "Ignore mudanças esperadas no conteúdo textual. Avalie fidelidade de "
+                        "logo, cabeçalho, rodapé, cores, fontes, hierarquia, tabelas, larguras "
+                        "de colunas, alinhamentos, espaçamentos, quebras de página e ausência "
+                        "de duplicações. Reprove se a estrutura foi reconstruída, se uma seção "
+                        "apareceu em células erradas ou se o PDF deixou de reproduzir o DOCX."
                     ),
                 },
                 {
@@ -214,12 +269,21 @@ def inspect_visual_fidelity(template_pdf, output_pdf):
                         {
                             "type": "input_text",
                             "text": (
-                                f"Modelo: {template_pages} página(s). Documento: {output_pages} página(s). "
-                                "A primeira imagem contém o modelo e a segunda o documento gerado."
+                                f"Modelo: {template_pages} página(s). Documento: "
+                                f"{output_pages} página(s). A primeira imagem contém o "
+                                "modelo e a segunda o documento gerado."
                             ),
                         },
-                        {"type": "input_image", "image_url": _data_url(template_sheet), "detail": "high"},
-                        {"type": "input_image", "image_url": _data_url(output_sheet), "detail": "high"},
+                        {
+                            "type": "input_image",
+                            "image_url": _data_url(template_sheet),
+                            "detail": "high",
+                        },
+                        {
+                            "type": "input_image",
+                            "image_url": _data_url(output_sheet),
+                            "detail": "high",
+                        },
                     ],
                 },
             ],
@@ -245,6 +309,8 @@ def inspect_visual_fidelity(template_pdf, output_pdf):
             output_pages=output_pages,
         )
     except Exception as exc:
-        local.issues.append(f"Inspeção visual por IA indisponível: {str(exc)[:180]}")
+        local.issues.append(
+            f"Inspeção visual por IA indisponível: {str(exc)[:180]}"
+        )
         local.summary += " A verificação estrutural e de paginação foi mantida."
         return local
