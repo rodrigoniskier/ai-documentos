@@ -1,13 +1,13 @@
 {% extends 'base.html' %}
-{% block title %}{% if kind == 'terms' %}Termos de Uso{% else %}Aviso de Privacidade{% endif %} — RN DocumentAI{% endblock %}
+{% block title %}{% if kind == 'terms' %}Termos de Uso{% else %}Aviso de Privacidade{% endif %} — AjudAI Docente{% endblock %}
 {% block content %}
 <div class="container py-5 legal-copy" style="max-width: 920px;">
   {% if kind == 'terms' %}
     <h1>Termos de Uso</h1>
-    <p class="text-muted">Última atualização: 25 de julho de 2026.</p>
+    <p class="text-muted">Última atualização: 28 de julho de 2026.</p>
 
     <h2 class="h4 mt-4">1. Objeto e aceitação</h2>
-    <p>A RN DocumentAI é uma plataforma da RN Content Lab destinada à criação assistida de documentos acadêmicos. Ao criar uma conta ou utilizar a plataforma, o usuário declara ter lido e aceitado estes Termos e o Aviso de Privacidade.</p>
+    <p>O AjudAI Docente é uma plataforma do AI_RN_LAB destinada à criação assistida de documentos acadêmicos. Ao criar uma conta ou utilizar a plataforma, o usuário declara ter lido e aceitado estes Termos e o Aviso de Privacidade.</p>
 
     <h2 class="h4 mt-4">2. Conta e licença de uso</h2>
     <p>A conta é pessoal, nominal e intransferível. O usuário deve manter suas credenciais protegidas e comunicar imediatamente qualquer suspeita de acesso indevido. É proibido compartilhar a conta, contornar limites técnicos, revender acesso ou explorar a plataforma de maneira incompatível com o plano contratado.</p>
@@ -27,10 +27,10 @@
     <p>O usuário declara possuir autorização para utilizar os arquivos enviados. Não devem ser inseridos dados pessoais ou sensíveis de alunos, pacientes ou terceiros, documentos sigilosos sem autorização, materiais ilícitos ou conteúdos que violem direitos autorais, confidencialidade ou normas institucionais.</p>
 
     <h2 class="h4 mt-4">7. Disponibilidade e alterações</h2>
-    <p>A RN Content Lab adota medidas razoáveis de continuidade e segurança, mas não garante funcionamento ininterrupto. Manutenções, falhas de terceiros, indisponibilidade de provedores e eventos fora de controle razoável podem afetar temporariamente o serviço. Recursos e limites poderão ser atualizados, com comunicação adequada quando a mudança afetar assinaturas vigentes.</p>
+    <p>O AI_RN_LAB adota medidas razoáveis de continuidade e segurança, mas não garante funcionamento ininterrupto. Manutenções, falhas de terceiros, indisponibilidade de provedores e eventos fora de controle razoável podem afetar temporariamente o serviço. Recursos e limites poderão ser atualizados, com comunicação adequada quando a mudança afetar assinaturas vigentes.</p>
 
     <h2 class="h4 mt-4">8. Propriedade intelectual</h2>
-    <p>A plataforma, sua identidade visual, código, estrutura e materiais próprios pertencem à RN Content Lab ou a seus licenciantes. O usuário mantém os direitos que possuir sobre os conteúdos enviados e recebe licença para utilizar os documentos gerados, sem prejuízo da responsabilidade de revisar direitos de terceiros.</p>
+    <p>A plataforma, sua identidade visual, código, estrutura e materiais próprios pertencem ao AI_RN_LAB ou a seus licenciantes. O usuário mantém os direitos que possuir sobre os conteúdos enviados e recebe licença para utilizar os documentos gerados, sem prejuízo da responsabilidade de revisar direitos de terceiros.</p>
 
     <h2 class="h4 mt-4">9. Suspensão e encerramento</h2>
     <p>Contas podem ser suspensas ou encerradas em caso de fraude, uso abusivo, violação destes Termos, risco de segurança ou inadimplência, preservados os direitos previstos em lei. O usuário pode solicitar encerramento da conta pelo e-mail de suporte.</p>
@@ -39,10 +39,10 @@
     <p>Dúvidas, solicitações e comunicações devem ser enviadas para <a href="mailto:{{ support_email }}">{{ support_email }}</a>.</p>
   {% else %}
     <h1>Aviso de Privacidade</h1>
-    <p class="text-muted">Última atualização: 25 de julho de 2026.</p>
+    <p class="text-muted">Última atualização: 28 de julho de 2026.</p>
 
     <h2 class="h4 mt-4">1. Responsável e contato</h2>
-    <p>A RN Content Lab é responsável pela operação da RN DocumentAI. Solicitações relacionadas à privacidade podem ser enviadas para <a href="mailto:{{ support_email }}">{{ support_email }}</a>.</p>
+    <p>O AI_RN_LAB é responsável pela operação do AjudAI Docente. Solicitações relacionadas à privacidade podem ser enviadas para <a href="mailto:{{ support_email }}">{{ support_email }}</a>.</p>
 
     <h2 class="h4 mt-4">2. Dados tratados</h2>
     <p>Podemos tratar nome, nome profissional, e-mail, credenciais protegidas, informações de instituição, curso e disciplina, arquivos acadêmicos enviados pelo usuário, documentos gerados, registros de uso, eventos de segurança, informações de assinatura e identificadores fornecidos pelo Asaas.</p>
