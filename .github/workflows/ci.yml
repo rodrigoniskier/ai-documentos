@@ -41,7 +41,7 @@ jobs:
         shell: bash
         run: |
           set -o pipefail
-          python manage.py test platform_app.tests --verbosity=2 2>&1 | tee core-tests.log
+          python manage.py test platform_app.tests platform_app.test_document_workflow --verbosity=2 2>&1 | tee core-tests.log
         env:
           DJANGO_SECRET_KEY: ci-secret
           DEBUG: "true"
