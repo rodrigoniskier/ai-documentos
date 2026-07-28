@@ -7,10 +7,16 @@
     <section class="card generate-card p-4 p-lg-5">
       <span class="section-kicker">NOVO DOCUMENTO</span>
       <h1>Personalize seu próprio modelo</h1>
-      <p class="text-muted">O modelo orienta a estrutura. Os campos e referências orientam o conteúdo. Tudo poderá ser revisado antes da exportação.</p>
+      <p class="text-muted">O modelo orienta a estrutura. Em arquivos DOCX, o sistema preenche o documento original e preserva margens, tabelas, estilos, imagens, cabeçalhos e rodapés.</p>
 
       {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors }}</div>{% endif %}
-      <div class="alert alert-info generation-cost"><strong>Esta geração utiliza {{ generation_cost }} créditos.</strong><span>Saldo atual: {{ user.wallet.balance }} crédito{{ user.wallet.balance|pluralize }}.</span></div>
+      <div class="alert alert-info generation-cost">
+        {% if unlimited_credits %}
+          <strong>Conta proprietária: gerações ilimitadas.</strong><span>Nenhum crédito será descontado.</span>
+        {% else %}
+          <strong>Esta geração utiliza {{ generation_cost }} créditos.</strong><span>Saldo atual: {{ user.wallet.balance }} crédito{{ user.wallet.balance|pluralize }}.</span>
+        {% endif %}
+      </div>
 
       <form method="post" enctype="multipart/form-data" id="generation-form" novalidate>
         {% csrf_token %}
@@ -52,7 +58,7 @@
     </section>
 
     <aside class="generate-aside">
-      <div class="card p-4"><h2 class="h5">Como obter melhor resultado</h2><ul class="check-list"><li>Use um modelo limpo e atualizado.</li><li>Anexe documentos realmente relevantes.</li><li>Evite dados pessoais ou sensíveis.</li><li>Revise normas, datas e bibliografia.</li></ul></div>
+      <div class="card p-4"><h2 class="h5">Como obter melhor resultado</h2><ul class="check-list"><li>Prefira um modelo DOCX para preservar a diagramação.</li><li>Use um modelo limpo e atualizado.</li><li>Anexe documentos realmente relevantes.</li><li>Evite dados pessoais ou sensíveis.</li><li>Revise normas, datas e bibliografia.</li></ul></div>
       <div class="responsibility-note mt-3"><strong>Revisão humana obrigatória</strong><p>A IA organiza uma primeira versão. A responsabilidade acadêmica e institucional permanece com o usuário.</p></div>
     </aside>
   </div>

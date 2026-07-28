@@ -128,7 +128,7 @@ Geração de Plano de Ensino em DOCX com:
 - coleta mínima;
 - arquivos privados;
 - exclusão e retenção mediante solicitação e obrigações aplicáveis;
-- contato: rncontentlab@gmail.com;
+- contato: backuprodrigoniskier@gmail.com;
 - proibição expressa de dados pessoais ou sensíveis de alunos e pacientes.
 
 ## Implantação

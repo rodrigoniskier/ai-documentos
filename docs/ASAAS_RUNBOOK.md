@@ -29,7 +29,7 @@ ASAAS_CHECKOUT_EXPIRATION_MINUTES=60
 ASAAS_HTTP_TIMEOUT=60
 ASAAS_BILLING_TYPES=CREDIT_CARD
 ASAAS_WEBHOOK_NAME=RN DocumentAI — Asaas Produção
-ASAAS_WEBHOOK_EMAIL=rncontentlab@gmail.com
+ASAAS_WEBHOOK_EMAIL=backuprodrigoniskier@gmail.com
 ```
 
 A API Key e o token do Webhook são segredos diferentes. Nenhum deles deve ser salvo no GitHub, em logs ou em e-mails.

@@ -13,10 +13,10 @@
   </div>
 
   <div class="row g-3 my-4">
-    <div class="col-md-3"><div class="card metric-card p-4"><span>Créditos</span><strong>{{ user.wallet.balance }}</strong><small>Cada geração utiliza 2 créditos.</small></div></div>
+    <div class="col-md-3"><div class="card metric-card p-4"><span>Créditos</span><strong>{% if unlimited_credits %}∞{% else %}{{ user.wallet.balance }}{% endif %}</strong><small>{% if unlimited_credits %}Conta proprietária sem limite de gerações.{% else %}Cada geração utiliza 2 créditos.{% endif %}</small></div></div>
     <div class="col-md-3"><div class="card metric-card p-4"><span>Documentos</span><strong>{{ project_count }}</strong><small>Projetos editáveis criados.</small></div></div>
     <div class="col-md-3"><div class="card metric-card p-4"><span>Modelos</span><strong>{{ template_count }}</strong><small>Estruturas enviadas por você.</small></div></div>
-    <div class="col-md-3"><div class="card metric-card p-4"><span>Uploads</span><strong>{{ upload_count }}/{{ upload_limit }}</strong><small>Modelos e referências do plano.</small></div></div>
+    <div class="col-md-3"><div class="card metric-card p-4"><span>Uploads</span><strong>{% if unlimited_credits %}{{ upload_count }}/∞{% else %}{{ upload_count }}/{{ upload_limit }}{% endif %}</strong><small>Modelos e referências do plano.</small></div></div>
   </div>
 
   {% if not projects %}
