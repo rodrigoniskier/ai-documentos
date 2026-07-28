@@ -7,10 +7,11 @@ from django.contrib.auth.decorators import login_required
 from django.http import FileResponse
 from django.shortcuts import get_object_or_404, redirect, render
 
+from .access import has_unlimited_credits
+from .document_export import build_project_docx
 from .document_forms import NewDocumentProjectForm
 from .document_models import DocumentProject, DocumentTemplate, ReferenceDocument
 from .document_services import (
-    build_project_docx,
     build_project_pdf,
     generate_project_content,
     process_reference,
@@ -73,7 +74,11 @@ def _discard_failed_project(project):
 
 
 def _safe_filename(value):
-    cleaned = "".join(character for character in value if character.isalnum() or character in "-_ ").strip()
+    cleaned = "".join(
+        character
+        for character in value
+        if character.isalnum() or character in "-_ "
+    ).strip()
     return cleaned[:80] or "documento"
 
 
@@ -91,6 +96,7 @@ def workspace(request):
             "reference_count": request.user.reference_documents.count(),
             "upload_limit": plan.source_limit,
             "upload_count": _upload_count(request.user),
+            "unlimited_credits": has_unlimited_credits(request.user),
         },
     )
 
@@ -101,7 +107,10 @@ def project_new(request):
     if request.method == "POST" and form.is_valid():
         reference_files = form.cleaned_data["reference_files"]
         required_slots = 1 + len(reference_files)
-        if _upload_count(request.user) + required_slots > request.user.subscription.plan.source_limit:
+        if (
+            _upload_count(request.user) + required_slots
+            > request.user.subscription.plan.source_limit
+        ):
             form.add_error(
                 None,
                 "O envio ultrapassa o limite de modelos e referências do seu plano.",
@@ -115,7 +124,8 @@ def project_new(request):
                 template_file = form.cleaned_data["template_file"]
                 template = DocumentTemplate.objects.create(
                     owner=request.user,
-                    title=form.cleaned_data["template_title"] or Path(template_file.name).stem,
+                    title=form.cleaned_data["template_title"]
+                    or Path(template_file.name).stem,
                     document_type=form.cleaned_data["document_type"],
                     file=template_file,
                 )
@@ -195,6 +205,7 @@ def project_new(request):
             "form": form,
             "field_configuration_json": form.field_configuration_json,
             "generation_cost": GENERATION_COST,
+            "unlimited_credits": has_unlimited_credits(request.user),
         },
     )
 
@@ -212,8 +223,14 @@ def project_edit(request, pk):
             body = body.strip()
             if heading or body:
                 sections.append({"heading": heading or "Nova seção", "body": body})
-        warnings = [item.strip() for item in request.POST.get("warnings", "").splitlines() if item.strip()]
-        project.title = request.POST.get("title", project.title).strip() or project.title
+        warnings = [
+            item.strip()
+            for item in request.POST.get("warnings", "").splitlines()
+            if item.strip()
+        ]
+        project.title = (
+            request.POST.get("title", project.title).strip() or project.title
+        )
         project.content = {
             "title": project.title,
             "warnings": warnings,
@@ -236,8 +253,14 @@ def project_edit(request, pk):
 
 @login_required
 def project_download_docx(request, pk):
-    project = get_object_or_404(DocumentProject, pk=pk, owner=request.user, status="ready")
-    content = build_project_docx(project, watermark=request.user.subscription.plan.watermark)
+    project = get_object_or_404(
+        DocumentProject, pk=pk, owner=request.user, status="ready"
+    )
+    watermark = (
+        request.user.subscription.plan.watermark
+        and not has_unlimited_credits(request.user)
+    )
+    content = build_project_docx(project, watermark=watermark)
     content.seek(0)
     return FileResponse(
         io.BytesIO(content.read()),
@@ -248,8 +271,14 @@ def project_download_docx(request, pk):
 
 @login_required
 def project_download_pdf(request, pk):
-    project = get_object_or_404(DocumentProject, pk=pk, owner=request.user, status="ready")
-    content = build_project_pdf(project, watermark=request.user.subscription.plan.watermark)
+    project = get_object_or_404(
+        DocumentProject, pk=pk, owner=request.user, status="ready"
+    )
+    watermark = (
+        request.user.subscription.plan.watermark
+        and not has_unlimited_credits(request.user)
+    )
+    content = build_project_pdf(project, watermark=watermark)
     content.seek(0)
     return FileResponse(
         io.BytesIO(content.read()),
