@@ -1,0 +1,66 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+      - name: Validate required root files
+        run: |
+          test -f build.sh
+          test -f requirements.txt
+          test -f manage.py
+          bash -n build.sh
+      - name: Install dependencies
+        run: python -m pip install -r requirements.txt
+      - name: Validate committed migrations
+        run: python manage.py makemigrations --check --dry-run
+        env:
+          DJANGO_SECRET_KEY: ci-secret
+          DEBUG: "true"
+      - name: Apply migrations
+        run: python manage.py migrate --noinput
+        env:
+          DJANGO_SECRET_KEY: ci-secret
+          DEBUG: "true"
+      - name: Django checks
+        run: python manage.py check
+        env:
+          DJANGO_SECRET_KEY: ci-secret
+          DEBUG: "true"
+      - name: Run core tests
+        shell: bash
+        run: |
+          set -o pipefail
+          python manage.py test platform_app.tests --verbosity=2 2>&1 | tee core-tests.log
+        env:
+          DJANGO_SECRET_KEY: ci-secret
+          DEBUG: "true"
+      - name: Run billing tests
+        if: always()
+        shell: bash
+        run: |
+          set -o pipefail
+          python manage.py test platform_app.test_billing --verbosity=2 2>&1 | tee billing-tests.log
+        env:
+          DJANGO_SECRET_KEY: ci-secret
+          DEBUG: "true"
+      - name: Upload test diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: django-test-diagnostics
+          path: |
+            core-tests.log
+            billing-tests.log
+          if-no-files-found: ignore
+          retention-days: 7
