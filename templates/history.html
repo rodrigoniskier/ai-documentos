@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container py-5">
+  <div class="d-flex flex-column flex-md-row justify-content-between gap-3">
+    <h1>Documentos</h1>
+    <div>
+      <a class="btn btn-outline-primary" href="{% url 'source_create' %}">Enviar fonte</a>
+      <a class="btn btn-warning" href="{% url 'generate_document' %}">Gerar plano</a>
+    </div>
+  </div>
+
+  <div class="list-group mt-4">
+    {% for document in documents %}
+      <a class="list-group-item list-group-item-action" href="{% url 'document_detail' document.pk %}">
+        <strong>{{ document.title }}</strong><br>
+        <small>{{ document.code }} · {{ document.created_at|date:'d/m/Y H:i' }}</small>
+      </a>
+    {% empty %}
+      <div class="list-group-item">Nenhum documento gerado.</div>
+    {% endfor %}
+  </div>
+
+  <h2 class="h4 mt-5">Fontes institucionais</h2>
+  <div class="list-group">
+    {% for source in sources %}
+      <div class="list-group-item">{{ source.title }} — {{ source.get_kind_display }} — {{ source.status }}</div>
+    {% empty %}
+      <div class="list-group-item">Nenhuma fonte enviada.</div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}
