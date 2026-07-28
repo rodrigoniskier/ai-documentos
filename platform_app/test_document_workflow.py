@@ -9,7 +9,7 @@ from django.urls import reverse
 from docx import Document
 
 from .document_forms import NewDocumentProjectForm
-from .document_models import DocumentProject
+from .document_models import DocumentProject, DocumentTemplate, ReferenceDocument
 from .document_services import create_openai_client
 from .models import Plan, User
 from .product_plans import apply_paid_plan_limits
@@ -162,3 +162,33 @@ class DocumentWorkflowViewTests(TestCase):
         self.assertEqual(pdf_response.status_code, 200)
         pdf_bytes = b"".join(pdf_response.streaming_content)
         self.assertTrue(pdf_bytes.startswith(b"%PDF"))
+
+    @patch(
+        "platform_app.document_views.generate_project_content",
+        side_effect=RuntimeError("Falha simulada da OpenAI"),
+    )
+    @patch("platform_app.document_views.process_template")
+    def test_failed_generation_releases_uploads_and_credits(
+        self, process_template, generate_content
+    ):
+        response = self.client.post(
+            reverse("project_new"),
+            data={
+                "document_type": "EMENTA",
+                "title": "Ementa de teste",
+                "course_context": "Medicina",
+                "institution_context": "Primeiro período.",
+                "extra_fields_json": "{}",
+                "template_file": docx_upload("modelo-falho.docx"),
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Não foi possível gerar o documento")
+        self.assertFalse(DocumentProject.objects.filter(owner=self.user).exists())
+        self.assertFalse(DocumentTemplate.objects.filter(owner=self.user).exists())
+        self.assertFalse(ReferenceDocument.objects.filter(owner=self.user).exists())
+        self.user.wallet.refresh_from_db()
+        self.assertEqual(self.user.wallet.balance, 5)
+        process_template.assert_called_once()
+        generate_content.assert_called_once()
