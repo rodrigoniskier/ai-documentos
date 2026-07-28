@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+{% block title %}{% if kind == 'terms' %}Termos de Uso{% else %}Aviso de Privacidade{% endif %} — RN DocumentAI{% endblock %}
+{% block content %}
+<div class="container py-5 legal-copy" style="max-width: 920px;">
+  {% if kind == 'terms' %}
+    <h1>Termos de Uso</h1>
+    <p class="text-muted">Última atualização: 25 de julho de 2026.</p>
+
+    <h2 class="h4 mt-4">1. Objeto e aceitação</h2>
+    <p>A RN DocumentAI é uma plataforma da RN Content Lab destinada à criação assistida de documentos acadêmicos. Ao criar uma conta ou utilizar a plataforma, o usuário declara ter lido e aceitado estes Termos e o Aviso de Privacidade.</p>
+
+    <h2 class="h4 mt-4">2. Conta e licença de uso</h2>
+    <p>A conta é pessoal, nominal e intransferível. O usuário deve manter suas credenciais protegidas e comunicar imediatamente qualquer suspeita de acesso indevido. É proibido compartilhar a conta, contornar limites técnicos, revender acesso ou explorar a plataforma de maneira incompatível com o plano contratado.</p>
+
+    <h2 class="h4 mt-4">3. Planos, créditos e cobrança</h2>
+    <p>O plano Gratuito concede créditos de uso único e não gera cobrança automática. Os planos Pro e Ultra possuem cobrança mensal recorrente processada pelo Asaas. Cada geração consome a quantidade de créditos indicada pela plataforma. Créditos não representam moeda, não são transferíveis e não podem ser convertidos em dinheiro.</p>
+    <p>A assinatura é ativada após a confirmação financeira recebida por meio do Webhook do provedor de pagamento. Em caso de falha técnica durante uma geração já debitada, a plataforma poderá realizar o estorno automático dos créditos correspondentes.</p>
+
+    <h2 class="h4 mt-4">4. Renovação e cancelamento</h2>
+    <p>As assinaturas pagas são renovadas mensalmente até o cancelamento. O usuário pode cancelar a renovação na página de assinatura. O cancelamento impede cobranças futuras e preserva o acesso aos recursos pagos até o fim do período já confirmado, quando aplicável.</p>
+    <p>Pedidos relacionados a cobrança, arrependimento ou reembolso serão analisados de acordo com a legislação brasileira aplicável e as condições da transação processada pelo Asaas.</p>
+
+    <h2 class="h4 mt-4">5. Responsabilidade acadêmica</h2>
+    <p>A inteligência artificial auxilia na organização e redação, mas pode produzir imprecisões. O professor permanece responsável pela revisão, correção, adequação institucional, direitos autorais, bibliografia, conformidade normativa e decisão final sobre qualquer documento gerado.</p>
+
+    <h2 class="h4 mt-4">6. Conteúdos permitidos e proibidos</h2>
+    <p>O usuário declara possuir autorização para utilizar os arquivos enviados. Não devem ser inseridos dados pessoais ou sensíveis de alunos, pacientes ou terceiros, documentos sigilosos sem autorização, materiais ilícitos ou conteúdos que violem direitos autorais, confidencialidade ou normas institucionais.</p>
+
+    <h2 class="h4 mt-4">7. Disponibilidade e alterações</h2>
+    <p>A RN Content Lab adota medidas razoáveis de continuidade e segurança, mas não garante funcionamento ininterrupto. Manutenções, falhas de terceiros, indisponibilidade de provedores e eventos fora de controle razoável podem afetar temporariamente o serviço. Recursos e limites poderão ser atualizados, com comunicação adequada quando a mudança afetar assinaturas vigentes.</p>
+
+    <h2 class="h4 mt-4">8. Propriedade intelectual</h2>
+    <p>A plataforma, sua identidade visual, código, estrutura e materiais próprios pertencem à RN Content Lab ou a seus licenciantes. O usuário mantém os direitos que possuir sobre os conteúdos enviados e recebe licença para utilizar os documentos gerados, sem prejuízo da responsabilidade de revisar direitos de terceiros.</p>
+
+    <h2 class="h4 mt-4">9. Suspensão e encerramento</h2>
+    <p>Contas podem ser suspensas ou encerradas em caso de fraude, uso abusivo, violação destes Termos, risco de segurança ou inadimplência, preservados os direitos previstos em lei. O usuário pode solicitar encerramento da conta pelo e-mail de suporte.</p>
+
+    <h2 class="h4 mt-4">10. Contato</h2>
+    <p>Dúvidas, solicitações e comunicações devem ser enviadas para <a href="mailto:{{ support_email }}">{{ support_email }}</a>.</p>
+  {% else %}
+    <h1>Aviso de Privacidade</h1>
+    <p class="text-muted">Última atualização: 25 de julho de 2026.</p>
+
+    <h2 class="h4 mt-4">1. Responsável e contato</h2>
+    <p>A RN Content Lab é responsável pela operação da RN DocumentAI. Solicitações relacionadas à privacidade podem ser enviadas para <a href="mailto:{{ support_email }}">{{ support_email }}</a>.</p>
+
+    <h2 class="h4 mt-4">2. Dados tratados</h2>
+    <p>Podemos tratar nome, nome profissional, e-mail, credenciais protegidas, informações de instituição, curso e disciplina, arquivos acadêmicos enviados pelo usuário, documentos gerados, registros de uso, eventos de segurança, informações de assinatura e identificadores fornecidos pelo Asaas.</p>
+    <p>A plataforma não foi projetada para receber dados pessoais ou sensíveis de alunos, pacientes ou terceiros. O usuário deve remover essas informações antes do envio.</p>
+
+    <h2 class="h4 mt-4">3. Finalidades</h2>
+    <p>Os dados são utilizados para criar e autenticar contas, operar a geração de documentos, armazenar arquivos, controlar créditos e planos, processar assinaturas, prevenir fraude, manter segurança, prestar suporte, cumprir obrigações legais e melhorar a confiabilidade do serviço.</p>
+
+    <h2 class="h4 mt-4">4. Inteligência artificial</h2>
+    <p>Os conteúdos acadêmicos selecionados pelo usuário podem ser enviados à OpenAI para gerar o documento solicitado. A aplicação utiliza chamadas no backend e solicita o não armazenamento da resposta quando o recurso é suportado. O nome e o e-mail da conta não são incluídos deliberadamente no conteúdo enviado para geração.</p>
+
+    <h2 class="h4 mt-4">5. Compartilhamento com operadores</h2>
+    <p>Dados podem ser processados por fornecedores necessários à operação, incluindo Render para aplicação e banco de dados, Cloudflare R2 para armazenamento privado, OpenAI para geração, Asaas para pagamentos e ferramentas operacionais de comunicação e automação. Cada fornecedor trata dados conforme sua função e seus próprios compromissos de segurança e privacidade.</p>
+
+    <h2 class="h4 mt-4">6. Armazenamento e segurança</h2>
+    <p>Arquivos são mantidos em armazenamento privado e downloads exigem autenticação. A plataforma utiliza HTTPS, controle de acesso por usuário, variáveis de ambiente para segredos, registros de eventos financeiros e URLs temporárias quando aplicável. Nenhum sistema é totalmente imune a incidentes, mas são adotadas medidas proporcionais ao serviço.</p>
+
+    <h2 class="h4 mt-4">7. Retenção</h2>
+    <p>Dados de conta e documentos são mantidos enquanto necessários para prestar o serviço, cumprir o plano contratado, atender obrigações legais ou resguardar direitos. Registros financeiros e de segurança podem ser conservados pelos prazos exigidos pela legislação. Solicitações de exclusão serão atendidas quando não houver obrigação legítima de retenção.</p>
+
+    <h2 class="h4 mt-4">8. Direitos do titular</h2>
+    <p>O titular pode solicitar confirmação de tratamento, acesso, correção, informação sobre compartilhamento, anonimização, bloqueio ou exclusão quando aplicável, além de revogação de consentimento e oposição nos termos da legislação brasileira.</p>
+
+    <h2 class="h4 mt-4">9. Cookies e sessão</h2>
+    <p>A plataforma utiliza cookies estritamente necessários para autenticação, sessão e proteção contra requisições indevidas. Não são necessários cookies publicitários para a operação principal.</p>
+
+    <h2 class="h4 mt-4">10. Transferências internacionais</h2>
+    <p>Alguns fornecedores podem processar dados fora do Brasil. Nesses casos, são utilizados serviços com medidas contratuais e técnicas compatíveis com a finalidade do tratamento.</p>
+
+    <h2 class="h4 mt-4">11. Atualizações</h2>
+    <p>Este Aviso poderá ser atualizado para refletir mudanças legais, técnicas ou operacionais. A data da versão vigente será indicada nesta página.</p>
+  {% endif %}
+</div>
+{% endblock %}
