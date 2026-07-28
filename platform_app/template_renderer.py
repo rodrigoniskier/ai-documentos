@@ -5,18 +5,43 @@ from copy import deepcopy
 
 from docx import Document
 from docx.oxml import OxmlElement
+from docx.shared import Pt
 from docx.text.paragraph import Paragraph
 
 
 DOCUMENT_LABEL_ALIASES = {
-    "titulo": ("titulo", "nome do documento", "documento"),
+    "titulo": ("titulo", "nome do documento"),
     "curso": ("curso", "area", "curso ou area"),
+    "componente": (
+        "componente",
+        "disciplina",
+        "componente curricular",
+        "unidade curricular",
+    ),
+    "periodo": ("periodo", "etapa"),
+    "turno": ("turno",),
+    "modalidade": ("modalidade",),
+    "semestre": ("semestre",),
+    "professor responsavel": (
+        "professor responsavel",
+        "professor",
+        "docente",
+    ),
+    "c h semanal": (
+        "c h semanal",
+        "ch semanal",
+        "carga horaria semanal",
+    ),
+    "c h semestral": (
+        "c h semestral",
+        "ch semestral",
+        "carga horaria semestral",
+        "carga horaria total",
+        "carga horaria",
+    ),
     "contexto": ("contexto", "contexto institucional", "instituicao"),
-    "tipo_documento": ("tipo", "tipo de documento"),
-    "disciplina": ("disciplina", "componente curricular", "unidade curricular"),
-    "carga_horaria": ("carga horaria", "carga horaria total", "ch"),
-    "periodo": ("periodo", "semestre", "etapa"),
-    "objetivo_geral": ("objetivo geral",),
+    "tipo documento": ("tipo", "tipo de documento"),
+    "objetivo geral": ("objetivo geral",),
     "objetivos": ("objetivos", "objetivos especificos"),
     "metodologia": ("metodologia", "estrategias metodologicas"),
     "avaliacao": ("avaliacao", "processo avaliativo", "estrategia avaliativa"),
@@ -28,22 +53,70 @@ DOCUMENT_LABEL_ALIASES = {
     "duracao": ("duracao", "tempo previsto"),
     "recursos": ("recursos", "recursos didaticos"),
     "nivel": ("nivel", "nivel de dificuldade"),
-    "quantidade_itens": ("quantidade de itens", "numero de itens"),
-    "tipo_questoes": ("tipos de questoes", "tipo de questoes"),
+    "quantidade itens": ("quantidade de itens", "numero de itens"),
+    "tipo questoes": ("tipos de questoes", "tipo de questoes"),
     "criterios": ("criterios", "criterios de avaliacao"),
-    "objetivo": ("objetivo",),
     "resultados": ("resultados",),
     "recomendacoes": ("recomendacoes",),
-    "publico_alvo": ("publico alvo",),
+    "publico alvo": ("publico alvo",),
     "cronograma": ("cronograma",),
-    "resultados_esperados": ("resultados esperados",),
+    "resultados esperados": ("resultados esperados",),
 }
+
+SECTION_LABEL_ALIASES = {
+    "plano de ensino": ("plano de ensino", "identificacao", "dados gerais"),
+    "ementa": ("ementa",),
+    "objetivos competencias": (
+        "objetivos competencias",
+        "objetivos e competencias",
+        "competencias",
+        "objetivos",
+    ),
+    "conteudo": ("conteudo", "conteudo programatico"),
+    "estrategias de ensino": (
+        "estrategias de ensino",
+        "metodologia",
+        "estrategias metodologicas",
+    ),
+    "recursos disponiveis": (
+        "recursos disponiveis",
+        "recursos",
+        "recursos didaticos",
+    ),
+    "avaliacao": ("avaliacao", "processo avaliativo"),
+    "bibliografia basica": ("bibliografia basica",),
+    "bibliografia complementar": ("bibliografia complementar",),
+    "pontos para revisao docente": (
+        "pontos para revisao docente",
+        "pontos de revisao",
+        "revisao docente",
+        "observacoes",
+    ),
+}
+
+_BULLET_PREFIX = re.compile(r"^\s*(?:[•▪◦●\-–—]\s*)+")
+_UNIT_WITH_HOURS = re.compile(
+    r"^\s*(UNIDADE\s+[IVXLCDM]+.*?)\s*(?:\|\s*)?"
+    r"C\s*/?\s*H\s*:\s*([^\n|]+)\s*$",
+    re.I,
+)
+_NUMBERING_PREFIX = re.compile(
+    r"^\s*(?:(?:\d+)|(?:[IVXLCDM]+))\s*[.\-–—):]\s*",
+    re.I,
+)
 
 
 def normalize_label(value):
+    """Normaliza rótulos sem apagar palavras iniciadas por C, D, I, L, M, V ou X.
+
+    A implementação anterior removia qualquer sequência inicial formada por algarismos
+    romanos. Assim, palavras como ``CONTEÚDO`` e ``Cognitivos`` eram mutiladas e
+    acabavam acionando correspondências incorretas.
+    """
+
     value = unicodedata.normalize("NFKD", str(value or ""))
     value = value.encode("ascii", "ignore").decode("ascii")
-    value = re.sub(r"^[\s\dIVXLCDM.\-–—()]+", "", value, flags=re.I)
+    value = _NUMBERING_PREFIX.sub("", value)
     value = re.sub(r"[^a-zA-Z0-9]+", " ", value).strip().lower()
     return re.sub(r"\s+", " ", value)
 
@@ -66,7 +139,8 @@ def _common_prefix_length(left, right):
 
 
 def replace_paragraph_text(paragraph, value):
-    """Substitui texto preservando estilo do parágrafo e o máximo possível dos runs."""
+    """Substitui texto preservando o estilo do parágrafo e seus runs principais."""
+
     new_text = str(value or "")
     old_text = paragraph.text
     if old_text == new_text:
@@ -108,21 +182,128 @@ def replace_paragraph_text(paragraph, value):
     return True
 
 
-def _append_paragraph_after(paragraph, text):
-    new_element = OxmlElement("w:p")
+def _append_paragraph_after(paragraph, text=""):
+    new_element = deepcopy(paragraph._p)
+    for text_node in new_element.xpath(".//w:t"):
+        text_node.text = ""
     paragraph._p.addnext(new_element)
     new_paragraph = Paragraph(new_element, paragraph._parent)
-    try:
-        new_paragraph.style = paragraph.style
-    except Exception:
-        pass
-    new_paragraph.add_run(str(text or ""))
+    replace_paragraph_text(new_paragraph, text)
     return new_paragraph
+
+
+def _remove_paragraph(paragraph):
+    element = paragraph._element
+    parent = element.getparent()
+    if parent is not None:
+        parent.remove(element)
+    paragraph._p = paragraph._element = None
+
+
+def _unique_cells(row):
+    seen = set()
+    result = []
+    for cell in row.cells:
+        identity = id(cell._tc)
+        if identity in seen:
+            continue
+        seen.add(identity)
+        result.append(cell)
+    return result
+
+
+def _clean_line(value):
+    return _BULLET_PREFIX.sub("", str(value or "")).strip()
+
+
+def _compact_paragraph(paragraph, floor=8.0, reduction=0.75):
+    for run in paragraph.runs:
+        if run.font.size is None:
+            continue
+        current = run.font.size.pt
+        if current > floor:
+            run.font.size = Pt(max(floor, current - reduction))
+
+
+def _set_cell_lines(cell, lines, *, list_mode=True, join_plain=False, compact=False):
+    cleaned = [_clean_line(line) for line in lines if _clean_line(line)]
+    paragraphs = list(cell.paragraphs)
+
+    if join_plain:
+        text = " ".join(cleaned)
+        target = next(
+            (paragraph for paragraph in paragraphs if paragraph.text.strip()),
+            paragraphs[0] if paragraphs else cell.add_paragraph(),
+        )
+        replace_paragraph_text(target, text)
+        if compact:
+            _compact_paragraph(target)
+        target_element = target._p
+        for paragraph in list(cell.paragraphs):
+            if paragraph._p is not target_element and paragraph.text.strip():
+                _remove_paragraph(paragraph)
+        return 1
+
+    content_paragraphs = [paragraph for paragraph in paragraphs if paragraph.text.strip()]
+    template = (
+        content_paragraphs[0]
+        if content_paragraphs
+        else paragraphs[-1] if paragraphs else cell.add_paragraph()
+    )
+    if list_mode:
+        template = next(
+            (
+                paragraph
+                for paragraph in paragraphs
+                if "list" in (getattr(paragraph.style, "name", "") or "").lower()
+            ),
+            template,
+        )
+
+    targets = list(content_paragraphs) or [template]
+    while len(targets) < len(cleaned):
+        targets.append(_append_paragraph_after(targets[-1]))
+
+    for index, paragraph in enumerate(list(targets)):
+        if index < len(cleaned):
+            replace_paragraph_text(paragraph, cleaned[index])
+            if compact:
+                _compact_paragraph(paragraph)
+        else:
+            _remove_paragraph(paragraph)
+
+    if not cleaned:
+        for paragraph in targets:
+            if paragraph._p is not None:
+                replace_paragraph_text(paragraph, "")
+    return 1
+
+
+def _canonical_field(label):
+    normalized = normalize_label(label)
+    if not normalized:
+        return None
+    for canonical, aliases in DOCUMENT_LABEL_ALIASES.items():
+        normalized_aliases = {normalize_label(alias) for alias in aliases}
+        if normalized in normalized_aliases:
+            return normalize_label(canonical)
+    return None
+
+
+def _canonical_section(label):
+    normalized = normalize_label(label)
+    if not normalized:
+        return None
+    for canonical, aliases in SECTION_LABEL_ALIASES.items():
+        normalized_aliases = {normalize_label(alias) for alias in aliases}
+        if normalized in normalized_aliases:
+            return normalize_label(canonical)
+    return None
 
 
 def _project_values(project):
     values = {
-        normalize_label(key): str(value)
+        _canonical_field(key) or normalize_label(key): str(value)
         for key, value in (project.field_values or {}).items()
         if value not in (None, "")
     }
@@ -134,259 +315,405 @@ def _project_values(project):
             "tipo documento": project.get_document_type_display(),
         }
     )
+    for item in (project.content or {}).get("resolved_fields", []):
+        if not isinstance(item, dict):
+            continue
+        key = _canonical_field(item.get("label") or item.get("key"))
+        value = str(item.get("value") or "").strip()
+        if key and value:
+            values[key] = value
     return {key: value for key, value in values.items() if str(value).strip()}
 
 
 def _section_values(project):
     result = {}
     for section in (project.content or {}).get("sections", []):
-        heading = normalize_label(section.get("heading"))
+        heading = _canonical_section(section.get("heading"))
         body = str(section.get("body") or "").strip()
         if heading and body:
             result[heading] = body
     return result
 
 
-def _canonical_field(label):
-    normalized = normalize_label(label)
-    if not normalized:
-        return None
-    for field, aliases in DOCUMENT_LABEL_ALIASES.items():
-        for alias in aliases:
-            normalized_alias = normalize_label(alias)
-            if normalized == normalized_alias:
-                return normalize_label(field)
-            if len(normalized_alias) >= 4 and (
-                normalized_alias in normalized or normalized in normalized_alias
-            ):
-                return normalize_label(field)
-    return normalized
+def _parse_metadata(body):
+    values = {}
+    for line in str(body or "").splitlines():
+        for part in re.split(r"\s*\|\s*", line):
+            if ":" not in part:
+                continue
+            label, value = part.split(":", 1)
+            canonical = _canonical_field(label)
+            if canonical and value.strip():
+                values[canonical] = value.strip()
+    return values
 
 
-def _best_match(label, project_values, section_values):
-    normalized = normalize_label(label)
-    if not normalized:
-        return None
+def _metadata_values(project_values, section_values):
+    """Prioriza valores resolvidos pela IA/modelo sobre campos brutos conflitantes."""
 
-    canonical = _canonical_field(normalized)
-    if canonical in project_values:
-        return project_values[canonical]
-    if normalized in project_values:
-        return project_values[normalized]
-    if normalized in section_values:
-        return section_values[normalized]
+    metadata = dict(project_values)
+    identification = section_values.get("plano de ensino")
+    if identification:
+        metadata.update(_parse_metadata(identification))
+    return metadata
 
-    candidates = {**project_values, **section_values}
-    best = None
-    best_score = 0
-    for key, value in candidates.items():
-        if len(key) < 3:
+
+def _replace_labeled_paragraph(paragraph, value):
+    text = paragraph.text
+    if ":" not in text:
+        return False
+    colon_position = text.find(":") + 1
+    cursor = 0
+    inserted = False
+    for run in paragraph.runs:
+        original = run.text
+        end = cursor + len(original)
+        if end <= colon_position:
+            cursor = end
             continue
-        score = 0
-        if key == normalized:
-            score = 100
-        elif key in normalized:
-            score = 80 + min(len(key), 20)
-        elif normalized in key:
-            score = 65 + min(len(normalized), 20)
+        if cursor < colon_position:
+            keep = colon_position - cursor
+            run.text = original[:keep] + " " + str(value)
+            inserted = True
+        elif not inserted:
+            run.text = " " + str(value)
+            inserted = True
         else:
-            left = set(key.split())
-            right = set(normalized.split())
-            overlap = len(left & right)
-            if overlap:
-                score = overlap * 20
-        if score > best_score:
-            best_score = score
-            best = value
-    return best if best_score >= 40 else None
+            run.text = ""
+        cursor = end
+    if not inserted:
+        paragraph.add_run(" " + str(value))
+    return True
 
 
-def _heading_match(text, section_values):
-    normalized = normalize_label(text)
-    if not normalized:
+def _fill_metadata_tables(document, metadata, *, compact=False):
+    changes = 0
+    processed = set()
+    for table in document.tables:
+        for row in table.rows:
+            for cell in _unique_cells(row):
+                identity = id(cell._tc)
+                if identity in processed:
+                    continue
+                processed.add(identity)
+                for paragraph in cell.paragraphs:
+                    if ":" not in paragraph.text:
+                        continue
+                    label = paragraph.text.split(":", 1)[0]
+                    canonical = _canonical_field(label)
+                    if not canonical or canonical not in metadata:
+                        continue
+                    changes += int(
+                        _replace_labeled_paragraph(paragraph, metadata[canonical])
+                    )
+                    if compact:
+                        _compact_paragraph(paragraph)
+    return changes
+
+
+def _parse_subsections(body, labels):
+    normalized_labels = {normalize_label(label) for label in labels}
+    result = {label: [] for label in normalized_labels}
+    current = None
+    for raw_line in str(body or "").splitlines():
+        line = raw_line.strip()
+        normalized = normalize_label(line)
+        if normalized in normalized_labels:
+            current = normalized
+            continue
+        cleaned = _clean_line(line)
+        if current and cleaned:
+            result[current].append(cleaned)
+    return result
+
+
+def _parse_units(body):
+    units = []
+    current = None
+    for raw_line in str(body or "").splitlines():
+        line = raw_line.strip()
+        if not line:
+            continue
+        match = _UNIT_WITH_HOURS.match(line)
+        if not match:
+            alternative = re.match(
+                r"^(.*?)\s*\|\s*C\s*/?\s*H\s*:\s*(.+)$",
+                line,
+                flags=re.I,
+            )
+            if alternative and normalize_label(alternative.group(1)).startswith("unidade"):
+                match = alternative
+        if match:
+            current = {
+                "name": match.group(1).strip(),
+                "hours": match.group(2).strip(),
+                "topics": [],
+            }
+            units.append(current)
+            continue
+        if current is not None:
+            cleaned = _clean_line(line)
+            if cleaned:
+                current["topics"].append(cleaned)
+    return units
+
+
+def _table_heading(table):
+    if not table.rows:
         return None
-    if normalized in section_values:
-        return normalized
-    best = None
-    best_score = 0
-    for heading in section_values:
-        if heading == normalized:
-            return heading
-        score = 0
-        if heading in normalized:
-            score = 80 + min(len(heading), 20)
-        elif normalized in heading:
-            score = 60 + min(len(normalized), 20)
-        else:
-            overlap = len(set(heading.split()) & set(normalized.split()))
-            score = overlap * 20
-        if score > best_score:
-            best = heading
-            best_score = score
-    return best if best_score >= 60 else None
+    for cell in _unique_cells(table.rows[0]):
+        for paragraph in cell.paragraphs:
+            if not paragraph.text.strip():
+                continue
+            heading = _canonical_section(paragraph.text)
+            if heading:
+                return heading
+            break
+    return None
 
 
-def _replace_inline_label(paragraph, project_values, section_values):
-    text = paragraph.text.strip()
-    if not text or ":" not in text:
-        return False
-    label, _, current = text.partition(":")
-    value = _best_match(label, project_values, section_values)
-    if value is None:
-        return False
-    replacement = f"{label.strip()}: {value}"
-    return replace_paragraph_text(paragraph, replacement)
+def _fill_objectives_table(table, body, *, compact=False):
+    subsections = _parse_subsections(body, ("Cognitivos", "Habilidades", "Atitudes"))
+    changes = 0
+    for row in table.rows[1:]:
+        cells = _unique_cells(row)
+        if len(cells) < 2:
+            continue
+        label = normalize_label(cells[0].text)
+        if label in subsections and subsections[label]:
+            changes += _set_cell_lines(
+                cells[1], subsections[label], list_mode=True, compact=compact
+            )
+    return changes
 
 
-def _replace_cell_content(cell, value):
+def _fill_content_table(table, body, *, compact=False):
+    units = _parse_units(body)
+    if not units or len(table.rows) < 3:
+        return 0
+    changes = 0
+    for index, row in enumerate(table.rows[2:]):
+        cells = _unique_cells(row)
+        if len(cells) < 3:
+            continue
+        if index >= len(units):
+            # Não elimina linhas estruturais quando a IA devolve menos unidades.
+            continue
+        unit = units[index]
+        changes += _set_cell_lines(
+            cells[0], [unit["name"]], list_mode=False, join_plain=True, compact=compact
+        )
+        changes += _set_cell_lines(
+            cells[1], [unit["hours"]], list_mode=False, join_plain=True, compact=compact
+        )
+        changes += _set_cell_lines(
+            cells[2], unit["topics"], list_mode=True, compact=compact
+        )
+    return changes
+
+
+def _fill_bibliography_table(table, section_values, *, compact=False):
+    if len(table.rows) < 2:
+        return 0
+    headers = _unique_cells(table.rows[0])
+    targets = _unique_cells(table.rows[1])
+    changes = 0
+    for index, header in enumerate(headers):
+        if index >= len(targets):
+            continue
+        heading = None
+        for paragraph in header.paragraphs:
+            heading = _canonical_section(paragraph.text)
+            if heading:
+                break
+        if heading and section_values.get(heading):
+            changes += _set_cell_lines(
+                targets[index],
+                section_values[heading].splitlines(),
+                list_mode=True,
+                compact=compact,
+            )
+    return changes
+
+
+def _fill_review_table(table, body, *, compact=False):
+    if not table.rows:
+        return 0
+    cell = _unique_cells(table.rows[0])[0]
     paragraphs = list(cell.paragraphs)
     if not paragraphs:
-        paragraph = cell.add_paragraph()
-        replace_paragraph_text(paragraph, value)
-        return 1
-    lines = str(value or "").splitlines() or [""]
-    replace_paragraph_text(paragraphs[0], lines[0])
-    for index, paragraph in enumerate(paragraphs[1:], start=1):
-        replace_paragraph_text(paragraph, lines[index] if index < len(lines) else "")
-    if len(lines) > len(paragraphs):
-        remaining = "\n".join(lines[len(paragraphs) :])
-        if remaining:
-            paragraphs[-1].add_run(("\n" if paragraphs[-1].text else "") + remaining)
+        return 0
+    lines = [_clean_line(line) for line in body.splitlines() if _clean_line(line)]
+    targets = list(paragraphs[1:])
+    if not targets:
+        targets = [_append_paragraph_after(paragraphs[0])]
+    while len(targets) < len(lines):
+        targets.append(_append_paragraph_after(targets[-1]))
+    for index, paragraph in enumerate(list(targets)):
+        if index < len(lines):
+            replace_paragraph_text(paragraph, lines[index])
+            if compact:
+                _compact_paragraph(paragraph)
+        else:
+            _remove_paragraph(paragraph)
     return 1
 
 
-def _fill_tables(document, project_values, section_values):
+def _fill_section_tables(document, section_values, *, compact=False):
     changes = 0
     for table in document.tables:
-        rows = table.rows
-        for row_index, row in enumerate(rows):
-            cells = row.cells
-            for cell in cells:
-                for paragraph in cell.paragraphs:
-                    changes += int(
-                        _replace_inline_label(paragraph, project_values, section_values)
-                    )
+        heading = _table_heading(table)
+        if not heading:
+            continue
+        body = section_values.get(heading)
 
-            for cell_index, cell in enumerate(cells):
-                label = cell.text.strip()
-                value = _best_match(label, project_values, section_values)
-                if value is None:
-                    continue
-
-                if cell_index + 1 < len(cells):
-                    target = cells[cell_index + 1]
-                    if target._tc is not cell._tc:
-                        changes += _replace_cell_content(target, value)
-                        continue
-
-                if row_index + 1 < len(rows):
-                    next_cells = rows[row_index + 1].cells
-                    target_index = min(cell_index, len(next_cells) - 1)
-                    target = next_cells[target_index]
-                    if target._tc is not cell._tc:
-                        changes += _replace_cell_content(target, value)
-
-        if len(rows) >= 2:
-            header = rows[0]
-            first_data = rows[1]
-            for index, header_cell in enumerate(header.cells):
-                value = _best_match(header_cell.text, project_values, section_values)
-                if value is not None and index < len(first_data.cells):
-                    changes += _replace_cell_content(first_data.cells[index], value)
+        if heading == "bibliografia basica":
+            changes += _fill_bibliography_table(
+                table, section_values, compact=compact
+            )
+            continue
+        if not body:
+            continue
+        if heading == "ementa" and len(table.rows) >= 2:
+            target = _unique_cells(table.rows[1])[0]
+            changes += _set_cell_lines(
+                target,
+                [body],
+                list_mode=False,
+                join_plain=True,
+                compact=compact,
+            )
+        elif heading == "objetivos competencias":
+            changes += _fill_objectives_table(table, body, compact=compact)
+        elif heading == "conteudo":
+            changes += _fill_content_table(table, body, compact=compact)
+        elif heading in {
+            "estrategias de ensino",
+            "recursos disponiveis",
+            "avaliacao",
+        } and len(table.rows) >= 2:
+            target = _unique_cells(table.rows[1])[0]
+            changes += _set_cell_lines(
+                target, body.splitlines(), list_mode=True, compact=compact
+            )
+        elif heading == "pontos para revisao docente":
+            changes += _fill_review_table(table, body, compact=compact)
     return changes
 
 
-def _fill_paragraph_sections(document, project_values, section_values, project):
+def _fill_paragraph_sections(document, section_values, *, compact=False):
+    """Preenche modelos sem tabelas usando somente títulos de seção exatos."""
+
     changes = 0
     paragraphs = list(document.paragraphs)
-    heading_positions = []
-
+    headings = []
     for index, paragraph in enumerate(paragraphs):
-        if _replace_inline_label(paragraph, project_values, section_values):
-            changes += 1
-        heading = _heading_match(paragraph.text, section_values)
-        if heading:
-            heading_positions.append((index, heading))
+        heading = _canonical_section(paragraph.text)
+        if heading and heading != "plano de ensino" and heading in section_values:
+            headings.append((index, heading))
 
-    for position, (heading_index, heading) in enumerate(heading_positions):
-        body = section_values[heading]
-        end = (
-            heading_positions[position + 1][0]
-            if position + 1 < len(heading_positions)
-            else len(paragraphs)
-        )
+    for position, (heading_index, heading) in enumerate(headings):
+        end = headings[position + 1][0] if position + 1 < len(headings) else len(paragraphs)
         candidates = [
             paragraph
             for paragraph in paragraphs[heading_index + 1 : end]
-            if normalize_label(paragraph.text)
+            if paragraph.text.strip()
+        ]
+        lines = [
+            _clean_line(line)
+            for line in section_values[heading].splitlines()
+            if _clean_line(line)
         ]
         if not candidates:
-            _append_paragraph_after(paragraphs[heading_index], body)
-            changes += 1
-            continue
-
-        body_lines = body.splitlines() or [body]
-        for candidate_index, candidate in enumerate(candidates):
-            if candidate_index < len(body_lines) - 1:
-                replacement = body_lines[candidate_index]
-            elif candidate_index == len(body_lines) - 1:
-                replacement = "\n".join(body_lines[candidate_index:])
+            paragraph = _append_paragraph_after(paragraphs[heading_index])
+            candidates = [paragraph]
+        while len(candidates) < len(lines):
+            candidates.append(_append_paragraph_after(candidates[-1]))
+        for index, paragraph in enumerate(list(candidates)):
+            if index < len(lines):
+                replace_paragraph_text(paragraph, lines[index])
+                if compact:
+                    _compact_paragraph(paragraph)
             else:
-                replacement = ""
-            changes += int(replace_paragraph_text(candidate, replacement))
-
-    document_type = normalize_label(project.get_document_type_display())
-    for paragraph in paragraphs:
-        style_name = normalize_label(getattr(paragraph.style, "name", ""))
-        paragraph_text = normalize_label(paragraph.text)
-        if (
-            "title" in style_name
-            or "titulo" in style_name
-            or (document_type and document_type in paragraph_text)
-        ):
-            if len(paragraph_text) <= 100:
-                changes += int(
-                    replace_paragraph_text(
-                        paragraph, project.content.get("title") or project.title
-                    )
-                )
-                break
+                _remove_paragraph(paragraph)
+        changes += 1
     return changes
 
 
-def _append_generated_content(document, project):
-    document.add_page_break()
-    document.add_heading(project.content.get("title") or project.title, level=1)
-    for warning in project.content.get("warnings", []):
-        paragraph = document.add_paragraph()
-        paragraph.add_run(f"Atenção: {warning}").italic = True
-    for section in project.content.get("sections", []):
-        document.add_heading(section.get("heading") or "Seção", level=2)
-        body = str(section.get("body") or "—")
-        for line in body.splitlines() or ["—"]:
-            document.add_paragraph(line or " ")
+def inspect_template_layout(file_field):
+    """Retorna um mapa compacto de layout para orientar a geração da IA."""
+
+    if not getattr(file_field, "name", "").lower().endswith(".docx"):
+        return {"format": "reference-only", "tables": [], "metadata_fields": []}
+
+    document = _read_docx(file_field)
+    tables = []
+    metadata_fields = []
+    for table_index, table in enumerate(document.tables):
+        heading = _table_heading(table)
+        slots = []
+        for row_index, row in enumerate(table.rows):
+            for cell_index, cell in enumerate(_unique_cells(row)):
+                for paragraph in cell.paragraphs:
+                    text = paragraph.text.strip()
+                    if ":" in text:
+                        label = text.split(":", 1)[0]
+                        canonical = _canonical_field(label)
+                        if canonical:
+                            metadata_fields.append(canonical)
+                if row_index == 0:
+                    continue
+                text = cell.text.strip()
+                if text:
+                    slots.append(
+                        {
+                            "row": row_index,
+                            "column": cell_index,
+                            "capacity_chars": len(text),
+                            "paragraphs": max(1, len([p for p in cell.paragraphs if p.text.strip()])),
+                        }
+                    )
+        tables.append(
+            {
+                "index": table_index,
+                "heading": heading or "",
+                "rows": len(table.rows),
+                "columns": len(_unique_cells(table.rows[0])) if table.rows else 0,
+                "slots": slots[:16],
+            }
+        )
+    return {
+        "format": "docx",
+        "table_count": len(document.tables),
+        "section_count": len(document.sections),
+        "metadata_fields": sorted(set(metadata_fields)),
+        "tables": tables,
+        "instructions": (
+            "Mantenha exatamente os títulos das seções, a quantidade de unidades e "
+            "a função de cada coluna. Produza texto compatível com a capacidade aproximada "
+            "dos blocos para evitar expansão desnecessária da paginação."
+        ),
+    }
 
 
-def render_project_in_template(project):
-    """Preenche o DOCX original sem reconstruir sua estrutura visual."""
+def render_project_in_template(project, *, compact=False):
+    """Preenche o DOCX original sem reconstruir ou adivinhar sua estrutura visual."""
+
     document = _read_docx(project.template.file)
     project_values = _project_values(project)
     section_values = _section_values(project)
+    metadata = _metadata_values(project_values, section_values)
 
     changes = 0
-    changes += _fill_tables(document, project_values, section_values)
-    changes += _fill_paragraph_sections(
-        document, project_values, section_values, project
-    )
-
-    if changes == 0:
-        _append_generated_content(document, project)
-
+    changes += _fill_metadata_tables(document, metadata, compact=compact)
+    changes += _fill_section_tables(document, section_values, compact=compact)
+    changes += _fill_paragraph_sections(document, section_values, compact=compact)
     return document, changes
 
 
 def clone_paragraph_format(source, target):
-    """Utilitário de teste e futuras expansões de blocos dinâmicos."""
+    """Utilitário compatível com testes e futuras expansões de blocos dinâmicos."""
+
     target._p.get_or_add_pPr().clear_content()
     if source._p.pPr is not None:
         target._p.insert(0, deepcopy(source._p.pPr))

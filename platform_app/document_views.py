@@ -8,11 +8,10 @@ from django.http import FileResponse
 from django.shortcuts import get_object_or_404, redirect, render
 
 from .access import has_unlimited_credits
-from .document_export import build_project_docx
+from .document_export import build_project_docx, build_project_pdf
 from .document_forms import NewDocumentProjectForm
 from .document_models import DocumentProject, DocumentTemplate, ReferenceDocument
 from .document_services import (
-    build_project_pdf,
     generate_project_content,
     process_reference,
     process_template,
@@ -30,6 +29,7 @@ def _upload_count(user):
 
     Tentativas que falharam não devem consumir a franquia do plano.
     """
+
     active_projects = user.document_projects.filter(status__in=ACTIVE_PROJECT_STATUSES)
     template_count = active_projects.values("template_id").distinct().count()
     through = DocumentProject.references.through
@@ -57,6 +57,7 @@ def _delete_file(file_field):
 
 def _discard_failed_project(project):
     """Remove projeto, modelo e referências exclusivos de uma tentativa falha."""
+
     references = list(project.references.all())
     template = project.template
     project.references.clear()
@@ -234,6 +235,7 @@ def project_edit(request, pk):
         project.content = {
             "title": project.title,
             "warnings": warnings,
+            "resolved_fields": content.get("resolved_fields", []),
             "sections": sections,
         }
         project.status = "ready"
@@ -260,7 +262,11 @@ def project_download_docx(request, pk):
         request.user.subscription.plan.watermark
         and not has_unlimited_credits(request.user)
     )
-    content = build_project_docx(project, watermark=watermark)
+    try:
+        content = build_project_docx(project, watermark=watermark)
+    except Exception as exc:
+        messages.error(request, f"Não foi possível exportar o DOCX: {exc}")
+        return redirect("project_edit", pk=project.pk)
     content.seek(0)
     return FileResponse(
         io.BytesIO(content.read()),
@@ -278,7 +284,11 @@ def project_download_pdf(request, pk):
         request.user.subscription.plan.watermark
         and not has_unlimited_credits(request.user)
     )
-    content = build_project_pdf(project, watermark=watermark)
+    try:
+        content = build_project_pdf(project, watermark=watermark)
+    except Exception as exc:
+        messages.error(request, f"Não foi possível exportar o PDF: {exc}")
+        return redirect("project_edit", pk=project.pk)
     content.seek(0)
     return FileResponse(
         io.BytesIO(content.read()),
