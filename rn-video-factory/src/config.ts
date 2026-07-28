@@ -6,10 +6,16 @@ const __dirname = path.dirname(__filename);
 export const projectRoot = path.resolve(__dirname, '..');
 
 const privacy = process.env.YOUTUBE_PRIVACY_STATUS || '';
+const port = Number(process.env.PORT || 10000);
+const renderHostname = String(process.env.RENDER_EXTERNAL_HOSTNAME || '').trim();
+const inferredBaseUrl = renderHostname
+  ? `https://${renderHostname}`
+  : `http://localhost:${port}`;
+const publicBaseUrl = String(process.env.PUBLIC_BASE_URL || inferredBaseUrl).replace(/\/$/, '');
 
 export const config = {
-  port: Number(process.env.PORT || 10000),
-  publicBaseUrl: (process.env.PUBLIC_BASE_URL || `http://localhost:${process.env.PORT || 10000}`).replace(/\/$/, ''),
+  port,
+  publicBaseUrl,
   adminToken: process.env.ADMIN_TOKEN || '',
   openaiApiKey: process.env.OPENAI_API_KEY || '',
   openaiTextModel: process.env.OPENAI_TEXT_MODEL || 'gpt-5.4-mini',
@@ -22,7 +28,7 @@ export const config = {
   dataDir: process.env.DATA_DIR || path.join(projectRoot, 'output'),
   googleClientId: process.env.GOOGLE_CLIENT_ID || '',
   googleClientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
-  googleRedirectUri: process.env.GOOGLE_REDIRECT_URI || '',
+  googleRedirectUri: process.env.GOOGLE_REDIRECT_URI || `${publicBaseUrl}/youtube/callback`,
   youtubePrivacyStatus: (['public', 'private', 'unlisted'].includes(privacy) ? privacy : 'public') as 'public' | 'private' | 'unlisted',
   youtubeCategoryId: process.env.YOUTUBE_CATEGORY_ID || '27',
   dailyEnabled: String(process.env.DAILY_ENABLED || 'false').toLowerCase() === 'true',
