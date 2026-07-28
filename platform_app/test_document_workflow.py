@@ -87,17 +87,21 @@ class OpenAIConfigurationTests(TestCase):
 
 
 class PaidPlanLimitTests(TestCase):
-    def test_paid_limits_are_increased(self):
+    def test_paid_limits_are_increased_moderately(self):
         ensure_plans()
         apply_paid_plan_limits()
         pro = Plan.objects.get(code="PRO")
         ultra = Plan.objects.get(code="PREMIUM")
         self.assertEqual(pro.monthly_credits, 60)
-        self.assertEqual(pro.source_limit, 60)
-        self.assertEqual(pro.daily_limit, 20)
-        self.assertEqual(ultra.monthly_credits, 180)
-        self.assertEqual(ultra.source_limit, 200)
-        self.assertEqual(ultra.daily_limit, 60)
+        self.assertEqual(pro.institution_limit, 3)
+        self.assertEqual(pro.discipline_limit, 15)
+        self.assertEqual(pro.source_limit, 40)
+        self.assertEqual(pro.daily_limit, 16)
+        self.assertEqual(ultra.monthly_credits, 160)
+        self.assertEqual(ultra.institution_limit, 7)
+        self.assertEqual(ultra.discipline_limit, 40)
+        self.assertEqual(ultra.source_limit, 140)
+        self.assertEqual(ultra.daily_limit, 40)
 
 
 class DocumentWorkflowViewTests(TestCase):
