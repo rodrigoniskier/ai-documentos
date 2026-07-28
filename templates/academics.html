@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container py-5">
+  <div class="d-flex flex-column flex-md-row justify-content-between gap-3">
+    <h1>Dados acadêmicos</h1>
+    <div>
+      <a class="btn btn-outline-primary" href="{% url 'institution_create' %}">Nova instituição</a>
+      <a class="btn btn-outline-primary" href="{% url 'course_create' %}">Novo curso</a>
+      <a class="btn btn-primary" href="{% url 'discipline_create' %}">Nova disciplina</a>
+    </div>
+  </div>
+
+  <h2 class="h4 mt-5">Instituições</h2>
+  <div class="list-group">
+    {% for institution in institutions %}
+      <div class="list-group-item">{{ institution.name }}</div>
+    {% empty %}
+      <div class="list-group-item">Nenhuma instituição cadastrada.</div>
+    {% endfor %}
+  </div>
+
+  <h2 class="h4 mt-5">Cursos</h2>
+  <div class="list-group">
+    {% for course in courses %}
+      <div class="list-group-item">{{ course.name }} — {{ course.institution }}</div>
+    {% empty %}
+      <div class="list-group-item">Nenhum curso cadastrado.</div>
+    {% endfor %}
+  </div>
+
+  <h2 class="h4 mt-5">Disciplinas</h2>
+  <div class="list-group">
+    {% for discipline in disciplines %}
+      <div class="list-group-item">{{ discipline.name }} — {{ discipline.course }}</div>
+    {% empty %}
+      <div class="list-group-item">Nenhuma disciplina cadastrada.</div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}
