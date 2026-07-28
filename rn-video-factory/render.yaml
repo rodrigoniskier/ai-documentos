@@ -1,0 +1,56 @@
+services:
+  - type: web
+    name: rn-video-factory
+    runtime: docker
+    rootDir: rn-video-factory
+    dockerfilePath: ./Dockerfile
+    plan: standard
+    healthCheckPath: /health
+    autoDeployTrigger: commit
+    disk:
+      name: rn-video-factory-data
+      mountPath: /data
+      sizeGB: 10
+    envVars:
+      - key: PORT
+        value: 10000
+      - key: PUBLIC_BASE_URL
+        sync: false
+      - key: ADMIN_TOKEN
+        generateValue: true
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: OPENAI_TEXT_MODEL
+        value: gpt-5.4-mini
+      - key: OPENAI_TTS_MODEL
+        value: gpt-4o-mini-tts
+      - key: OPENAI_TTS_VOICE
+        value: marin
+      - key: DEMO_URL
+        value: https://rodrigoniskier.pythonanywhere.com/app/submeter/
+      - key: DEMO_PRODUCT_NAME
+        value: Gestão Inteligente de Questões
+      - key: DEMO_CTA
+        value: Descubra como o trabalho da sua instituição pode ficar mais inteligente.
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: GOOGLE_REDIRECT_URI
+        sync: false
+      - key: YOUTUBE_PRIVACY_STATUS
+        value: public
+      - key: YOUTUBE_CATEGORY_ID
+        value: 27
+      - key: DATA_DIR
+        value: /data
+      - key: CHROME_EXECUTABLE
+        value: /usr/bin/chromium
+      - key: DAILY_ENABLED
+        value: false
+      - key: DAILY_HOUR
+        value: 8
+      - key: DAILY_MINUTE
+        value: 0
+      - key: TZ
+        value: America/Recife
