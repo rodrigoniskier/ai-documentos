@@ -1,0 +1,2 @@
+# Normaliza scripts de shell para ambientes Linux/Render.
+*.sh text eol=lf
