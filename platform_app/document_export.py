@@ -6,7 +6,9 @@ from django.conf import settings
 from django.core.files.base import ContentFile
 from docx import Document
 from docx.enum.text import WD_ALIGN_PARAGRAPH
+from docx.opc.constants import RELATIONSHIP_TYPE as RT
 from docx.shared import Cm, Pt
+from docx.text.paragraph import Paragraph
 
 from .document_conversion import convert_docx_bytes_to_pdf, libreoffice_available
 from .document_quality import audit_docx_structure, inspect_visual_fidelity
@@ -69,6 +71,8 @@ def _replace_placeholders_in_paragraph(paragraph, values):
 
 
 def _replace_placeholders(document, project):
+    """Preenche marcadores sem materializar cabeçalhos/rodapés inexistentes."""
+
     values = _template_values(project)
     changes = 0
 
@@ -87,9 +91,16 @@ def _replace_placeholders(document, project):
                     replace_in_container(cell.paragraphs, cell.tables)
 
     replace_in_container(document.paragraphs, document.tables)
-    for section in document.sections:
-        replace_in_container(section.header.paragraphs, section.header.tables)
-        replace_in_container(section.footer.paragraphs, section.footer.tables)
+
+    # Acessar section.header ou section.footer cria uma nova parte OOXML quando o
+    # modelo não a possui. Percorremos somente relacionamentos já existentes.
+    for relationship in document.part.rels.values():
+        if relationship.reltype not in {RT.HEADER, RT.FOOTER}:
+            continue
+        part = relationship.target_part
+        for paragraph_element in part.element.xpath(".//w:p"):
+            paragraph = Paragraph(paragraph_element, part)
+            changes += int(_replace_placeholders_in_paragraph(paragraph, values))
     return changes
 
 
@@ -178,7 +189,11 @@ def _verified_artifacts(project, watermark=False):
         return strict_docx, output_pdf, report
 
     template_docx = _read_template_bytes(project)
-    structure = audit_docx_structure(template_docx, strict_docx)
+    structure = audit_docx_structure(
+        template_docx,
+        strict_docx,
+        allow_footer_addition=watermark,
+    )
     if not structure.passed:
         raise DocumentFidelityError(
             "A auditoria estrutural impediu a exportação: " + " ".join(structure.issues)
@@ -195,7 +210,11 @@ def _verified_artifacts(project, watermark=False):
 
     if not report.passed:
         compact_docx = _render_docx_bytes(project, watermark, compact=True)
-        compact_structure = audit_docx_structure(template_docx, compact_docx)
+        compact_structure = audit_docx_structure(
+            template_docx,
+            compact_docx,
+            allow_footer_addition=watermark,
+        )
         if compact_structure.passed:
             compact_pdf = convert_docx_bytes_to_pdf(compact_docx)
             compact_report = inspect_visual_fidelity(template_pdf, compact_pdf)
