@@ -8,3 +8,6 @@ class PlatformAppConfig(AppConfig):
     def import_models(self):
         super().import_models()
         from . import document_models  # noqa: F401
+
+    def ready(self):
+        from . import signals  # noqa: F401
