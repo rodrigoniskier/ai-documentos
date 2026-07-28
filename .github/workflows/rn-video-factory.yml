@@ -1,0 +1,24 @@
+name: RN Video Factory
+
+on:
+  push:
+    paths:
+      - 'rn-video-factory/**'
+  pull_request:
+    paths:
+      - 'rn-video-factory/**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: rn-video-factory
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install
+      - run: npm run check
+      - run: docker build -t rn-video-factory .
