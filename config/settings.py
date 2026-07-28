@@ -127,10 +127,10 @@ LOGOUT_REDIRECT_URL = "home"
 PUBLIC_BASE_URL = os.getenv("PUBLIC_BASE_URL", "").rstrip("/")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
 OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-5.4-mini")
-SUPPORT_EMAIL = os.getenv("SUPPORT_EMAIL", "rncontentlab@gmail.com")
+SUPPORT_EMAIL = os.getenv("SUPPORT_EMAIL", "backuprodrigoniskier@gmail.com")
 DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", SUPPORT_EMAIL)
-TERMS_VERSION = os.getenv("TERMS_VERSION", "2026-07-25")
-PRIVACY_VERSION = os.getenv("PRIVACY_VERSION", "2026-07-25")
+TERMS_VERSION = os.getenv("TERMS_VERSION", "2026-07-28")
+PRIVACY_VERSION = os.getenv("PRIVACY_VERSION", "2026-07-28")
 
 ASAAS_ENABLED = env_bool("ASAAS_ENABLED", False)
 ASAAS_API_KEY = os.getenv("ASAAS_API_KEY", "")
@@ -142,7 +142,7 @@ ASAAS_CHECKOUT_EXPIRATION_MINUTES = int(
 ASAAS_HTTP_TIMEOUT = int(os.getenv("ASAAS_HTTP_TIMEOUT", "60"))
 ASAAS_BILLING_TYPES = os.getenv("ASAAS_BILLING_TYPES", "CREDIT_CARD")
 ASAAS_WEBHOOK_NAME = os.getenv(
-    "ASAAS_WEBHOOK_NAME", "RN DocumentAI — Asaas Produção"
+    "ASAAS_WEBHOOK_NAME", "AjudAI Docente — Asaas Produção"
 )
 ASAAS_WEBHOOK_EMAIL = os.getenv("ASAAS_WEBHOOK_EMAIL", SUPPORT_EMAIL)
 
