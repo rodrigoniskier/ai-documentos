@@ -37,12 +37,7 @@ def _unique_cells(row):
 
 
 def _structural_header_text(cell):
-    """Retorna somente rótulos visuais que definem a geometria da tabela.
-
-    Valores editáveis e rótulos de campos em caixa mista não participam da
-    assinatura. Assim, ``Disciplina | Imunologia`` pode ser personalizado sem
-    ser confundido com cabeçalhos imutáveis como ``UNIDADE | C/H | TÓPICOS``.
-    """
+    """Retorna somente rótulos visuais que definem a geometria da tabela."""
 
     text = " ".join(cell.text.split()).strip()
     if not text or "{{" in text or len(text) > 160:
@@ -94,7 +89,9 @@ def _package_counts(payload):
     }
 
 
-def audit_docx_structure(template_bytes, output_bytes):
+def audit_docx_structure(
+    template_bytes, output_bytes, *, allow_footer_addition=False
+):
     template = _document_from_bytes(template_bytes)
     output = _document_from_bytes(output_bytes)
     issues = []
@@ -124,13 +121,21 @@ def audit_docx_structure(template_bytes, output_bytes):
     actual_package = _package_counts(output_bytes)
     for key, label in {
         "headers": "cabeçalhos",
-        "footers": "rodapés",
         "media": "imagens incorporadas",
         "styles": "estilos",
         "numbering": "numeração e marcadores",
     }.items():
         if expected_package[key] != actual_package[key]:
             issues.append(f"A estrutura de {label} não foi preservada.")
+
+    expected_footers = expected_package["footers"]
+    actual_footers = actual_package["footers"]
+    footer_is_allowed = allow_footer_addition and actual_footers in {
+        expected_footers,
+        expected_footers + 1,
+    }
+    if actual_footers != expected_footers and not footer_is_allowed:
+        issues.append("A estrutura de rodapés não foi preservada.")
 
     return FidelityReport(
         passed=not issues,
@@ -189,17 +194,14 @@ def _data_url(image):
 def _local_pdf_report(template_pdf, output_pdf):
     _, template_pages = _render_pdf_pages(template_pdf, dpi=72, max_pages=1)
     _, output_pages = _render_pdf_pages(output_pdf, dpi=72, max_pages=1)
-    allowed_extra = max(1, round(template_pages * 0.34))
     issues = []
-    if output_pages > template_pages + allowed_extra:
+    if template_pages >= 2 and output_pages != template_pages:
         issues.append(
-            f"A paginação cresceu de {template_pages} para {output_pages} páginas, "
-            "acima da tolerância."
+            f"A paginação mudou de {template_pages} para {output_pages} páginas."
         )
-    if output_pages < max(1, template_pages - 1):
+    elif template_pages == 1 and output_pages > 2:
         issues.append(
-            f"A paginação caiu de {template_pages} para {output_pages} páginas, "
-            "indicando possível perda de conteúdo."
+            f"A paginação cresceu de 1 para {output_pages} páginas, acima da tolerância."
         )
     return FidelityReport(
         passed=not issues,
@@ -216,11 +218,7 @@ def _local_pdf_report(template_pdf, output_pdf):
 
 
 def inspect_visual_fidelity(template_pdf, output_pdf):
-    """Realiza inspeção visual final, priorizando estrutura e diagramação.
-
-    A inspeção local sempre é executada. Quando DOCUMENT_VISUAL_QA_ENABLED estiver
-    ativa, as miniaturas das páginas também são comparadas por um modelo com visão.
-    """
+    """Realiza inspeção visual final, priorizando estrutura e diagramação."""
 
     local = _local_pdf_report(template_pdf, output_pdf)
     if not getattr(settings, "DOCUMENT_VISUAL_QA_ENABLED", True):
