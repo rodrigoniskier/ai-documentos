@@ -11,15 +11,15 @@ shutdown() {
 trap shutdown INT TERM
 
 (
-  sleep 8
-  marker="${DATA_DIR:-/data}/first-video-generated"
+  sleep 10
+  marker="${DATA_DIR:-/data}/professional-video-v2-generated"
   if [ ! -f "$marker" ]; then
-    echo "Iniciando a produção imediata do primeiro vídeo..."
+    echo "Iniciando a produção imediata do primeiro vídeo profissional..."
     if node dist/app.js --generate; then
       date -u +%FT%TZ > "$marker"
-      echo "Primeiro vídeo concluído e disponível no painel."
+      echo "Vídeo profissional concluído e disponível no painel."
     else
-      echo "A produção imediata falhou; o próximo reinício tentará novamente." >&2
+      echo "A produção profissional falhou; o próximo reinício tentará novamente." >&2
     fi
   fi
 ) &

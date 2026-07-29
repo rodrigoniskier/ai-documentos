@@ -12,7 +12,22 @@ export interface VideoPlan {
   description: string;
   tags: string[];
   cta: string;
+  closing: string;
+  presenterLine: string;
   scenes: VideoScene[];
+}
+
+export interface DemoCapture {
+  shots: Record<Shot, string>;
+  video: string;
+}
+
+export interface VisualAssets {
+  painDesk: string;
+  painHands: string;
+  presenter: string;
+  relief: string;
+  ctaBackground: string;
 }
 
 export interface GenerationResult {
