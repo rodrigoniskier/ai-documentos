@@ -39,17 +39,16 @@ O `ADMIN_TOKEN` é gerado automaticamente pelo Blueprint e protege o painel, as 
 5. Baixe:
    - vídeo MP4;
    - miniatura JPG;
-   - texto completo de publicação;
-   - plano editorial JSON.
+   - texto completo de publicação.
 6. Use os botões de cópia para título, descrição e tags.
 7. Clique em **Abrir YouTube Studio** e publique no canal `AI LAB Rodrigo Niskier`.
 
 ## Produção diária
 
-O Blueprint deixa a rotina ativada para 08h00 no fuso `America/Recife`:
+A rotina fica ativada por padrão para 08h00 no fuso `America/Recife`:
 
 ```env
-DAILY_ENABLED=true
+MANUAL_ASSISTED_DAILY_ENABLED=true
 DAILY_HOUR=8
 DAILY_MINUTE=0
 TZ=America/Recife
