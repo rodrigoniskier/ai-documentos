@@ -38,7 +38,7 @@ services:
         value: /data
       - key: CHROME_EXECUTABLE
         value: /usr/bin/chromium
-      - key: DAILY_ENABLED
+      - key: MANUAL_ASSISTED_DAILY_ENABLED
         value: true
       - key: DAILY_HOUR
         value: 8
