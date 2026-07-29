@@ -12,9 +12,10 @@ export const config = {
   openaiTextModel: process.env.OPENAI_TEXT_MODEL || 'gpt-5.4-mini',
   openaiTtsModel: process.env.OPENAI_TTS_MODEL || 'gpt-4o-mini-tts',
   openaiTtsVoice: process.env.OPENAI_TTS_VOICE || 'marin',
+  openaiImageModel: process.env.OPENAI_IMAGE_MODEL || 'gpt-image-1-mini',
   demoUrl: process.env.DEMO_URL || 'https://rodrigoniskier.pythonanywhere.com/app/submeter/',
   productName: process.env.DEMO_PRODUCT_NAME || 'Gestão Inteligente de Questões',
-  cta: process.env.DEMO_CTA || 'Descubra como o trabalho da sua instituição pode ficar mais inteligente.',
+  cta: process.env.DEMO_CTA || 'Solicite um diagnóstico dos processos da sua instituição.',
   channelName: process.env.YOUTUBE_CHANNEL_NAME || 'AI LAB Rodrigo Niskier',
   youtubeStudioUrl: process.env.YOUTUBE_STUDIO_URL || 'https://studio.youtube.com',
   chromeExecutable: process.env.CHROME_EXECUTABLE || '/usr/bin/chromium',
@@ -23,6 +24,11 @@ export const config = {
   dailyHour: Number(process.env.DAILY_HOUR || 8),
   dailyMinute: Number(process.env.DAILY_MINUTE || 0),
   jobRetentionCount: Math.max(5, Number(process.env.JOB_RETENTION_COUNT || 30)),
+  visualAssetsEnabled: String(process.env.PROFESSIONAL_VISUALS_ENABLED || 'true').toLowerCase() === 'true',
+  videoWidth: 1920,
+  videoHeight: 1080,
+  targetDurationSeconds: Math.max(90, Math.min(150, Number(process.env.TARGET_VIDEO_DURATION_SECONDS || 112))),
 };
 
 export const jobsDir = path.join(config.dataDir, 'jobs');
+export const professionalAssetsDir = path.join(config.dataDir, 'professional-assets');
