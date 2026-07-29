@@ -25,11 +25,14 @@ RUN npm install --omit=dev=false
 
 COPY tsconfig.json ./
 COPY src ./src
-RUN npm run build && npm prune --omit=dev
+COPY start-now.sh ./start-now.sh
+RUN npm run build \
+    && npm prune --omit=dev \
+    && chmod +x /app/start-now.sh
 
 RUN mkdir -p /data /app/output && chown -R node:node /data /app/output /app
 USER node
 
 EXPOSE 10000
 ENTRYPOINT ["dumb-init", "--"]
-CMD ["node", "dist/app.js"]
+CMD ["/app/start-now.sh"]
