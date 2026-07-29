@@ -19,7 +19,7 @@ export const config = {
   youtubeStudioUrl: process.env.YOUTUBE_STUDIO_URL || 'https://studio.youtube.com',
   chromeExecutable: process.env.CHROME_EXECUTABLE || '/usr/bin/chromium',
   dataDir: process.env.DATA_DIR || path.join(projectRoot, 'output'),
-  dailyEnabled: String(process.env.DAILY_ENABLED || 'false').toLowerCase() === 'true',
+  dailyEnabled: String(process.env.MANUAL_ASSISTED_DAILY_ENABLED || 'true').toLowerCase() === 'true',
   dailyHour: Number(process.env.DAILY_HOUR || 8),
   dailyMinute: Number(process.env.DAILY_MINUTE || 0),
   jobRetentionCount: Math.max(5, Number(process.env.JOB_RETENTION_COUNT || 30)),
