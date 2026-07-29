@@ -17,8 +17,9 @@ export interface VideoPlan {
 
 export interface GenerationResult {
   id: string;
+  createdAt: string;
   videoPath: string;
+  thumbnailPath: string;
+  publicationTextPath: string;
   plan: VideoPlan;
-  youtubeVideoId?: string;
-  youtubeUrl?: string;
 }
