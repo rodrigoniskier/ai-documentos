@@ -3,6 +3,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import {promisify} from 'node:util';
 
+import {config} from './config.js';
 import type {Shot, VideoPlan} from './types.js';
 
 const execFileAsync = promisify(execFile);
@@ -90,7 +91,7 @@ export async function renderVideo(jobDir: string, plan: VideoPlan, shots: Record
     if (!scene) continue;
     const start = index * sceneDuration;
     const end = Math.min(totalDuration, (index + 1) * sceneDuration);
-    events.push(`Dialogue: 0,${assTime(start)},${assTime(end)},Brand,,0,0,0,,RN PROCESSOS INTELIGENTES`);
+    events.push(`Dialogue: 0,${assTime(start)},${assTime(end)},Brand,,0,0,0,,${assText(config.channelName.toUpperCase())}`);
     events.push(`Dialogue: 0,${assTime(start)},${assTime(end)},Caption,,0,0,0,,${assText(scene.caption)}`);
   }
   events.push(`Dialogue: 1,${assTime(Math.max(0, totalDuration - 3.2))},${assTime(totalDuration)},CTA,,0,0,0,,${assText(plan.cta)}`);
