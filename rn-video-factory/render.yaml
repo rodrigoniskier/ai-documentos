@@ -30,19 +30,21 @@ services:
         value: Gestão Inteligente de Questões
       - key: DEMO_CTA
         value: Descubra como o trabalho da sua instituição pode ficar mais inteligente.
-      - key: YOUTUBE_PRIVACY_STATUS
-        value: public
-      - key: YOUTUBE_CATEGORY_ID
-        value: 27
+      - key: YOUTUBE_CHANNEL_NAME
+        value: AI LAB Rodrigo Niskier
+      - key: YOUTUBE_STUDIO_URL
+        value: https://studio.youtube.com
       - key: DATA_DIR
         value: /data
       - key: CHROME_EXECUTABLE
         value: /usr/bin/chromium
       - key: DAILY_ENABLED
-        value: false
+        value: true
       - key: DAILY_HOUR
         value: 8
       - key: DAILY_MINUTE
         value: 0
+      - key: JOB_RETENTION_COUNT
+        value: 30
       - key: TZ
         value: America/Recife
