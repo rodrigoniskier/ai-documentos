@@ -24,12 +24,18 @@ services:
         value: gpt-4o-mini-tts
       - key: OPENAI_TTS_VOICE
         value: marin
+      - key: OPENAI_IMAGE_MODEL
+        value: gpt-image-1-mini
+      - key: PROFESSIONAL_VISUALS_ENABLED
+        value: true
+      - key: TARGET_VIDEO_DURATION_SECONDS
+        value: 112
       - key: DEMO_URL
         value: https://rodrigoniskier.pythonanywhere.com/app/submeter/
       - key: DEMO_PRODUCT_NAME
         value: Gestão Inteligente de Questões
       - key: DEMO_CTA
-        value: Descubra como o trabalho da sua instituição pode ficar mais inteligente.
+        value: Solicite um diagnóstico dos processos da sua instituição.
       - key: YOUTUBE_CHANNEL_NAME
         value: AI LAB Rodrigo Niskier
       - key: YOUTUBE_STUDIO_URL
