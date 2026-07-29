@@ -3,9 +3,11 @@ import path from 'node:path';
 
 import {captureDemo} from './capture.js';
 import {config, jobsDir} from './config.js';
+import {generateBackgroundMusic} from './music.js';
 import {generatePlan, generateSpeech} from './openai.js';
 import {renderThumbnail, renderVideo} from './render.js';
 import type {GenerationResult, VideoPlan} from './types.js';
+import {ensureVisualAssets} from './visuals.js';
 
 function publicationText(plan: VideoPlan): string {
   const hashtags = plan.tags
@@ -26,6 +28,9 @@ function publicationText(plan: VideoPlan): string {
     '',
     'TAGS DO YOUTUBE',
     plan.tags.join(', '),
+    '',
+    'TRANSPARÊNCIA',
+    'A apresentadora é virtual e as cenas humanas são ilustrativas. A demonstração do sistema é real.',
     '',
     'PUBLICAÇÃO MANUAL ASSISTIDA',
     '1. Baixe o vídeo e a miniatura no painel.',
@@ -50,20 +55,27 @@ export async function runPipeline(): Promise<GenerationResult> {
   const jobDir = path.join(jobsDir, id);
   await fs.mkdir(jobDir, {recursive: true});
 
-  console.log(`[${id}] Gerando plano editorial...`);
+  console.log(`[${id}] Gerando roteiro cinematográfico...`);
   const plan = await generatePlan();
   await fs.writeFile(path.join(jobDir, 'plan.json'), JSON.stringify(plan, null, 2));
 
-  console.log(`[${id}] Gerando narração...`);
+  console.log(`[${id}] Gerando locução profissional...`);
   const audioPath = path.join(jobDir, 'audio.mp3');
   await generateSpeech(plan, audioPath);
 
-  console.log(`[${id}] Capturando demonstração...`);
-  const shots = await captureDemo(jobDir);
+  console.log(`[${id}] Gravando demonstração real da aplicação...`);
+  const capture = await captureDemo(jobDir);
 
-  console.log(`[${id}] Renderizando vídeo e miniatura...`);
-  const videoPath = await renderVideo(jobDir, plan, shots, audioPath);
-  const thumbnailPath = await renderThumbnail(jobDir, plan, shots);
+  console.log(`[${id}] Preparando cenas humanas e identidade visual...`);
+  const assets = await ensureVisualAssets(path.join(jobDir, capture.shots.inicio));
+
+  console.log(`[${id}] Criando trilha musical original...`);
+  const musicPath = path.join(jobDir, 'background-music.wav');
+  await generateBackgroundMusic(musicPath, config.targetDurationSeconds + 24);
+
+  console.log(`[${id}] Renderizando vídeo profissional e miniatura...`);
+  const videoPath = await renderVideo(jobDir, plan, capture, audioPath, musicPath, assets);
+  const thumbnailPath = await renderThumbnail(jobDir, plan, capture, assets);
   const publicationTextPath = path.join(jobDir, 'publicacao.txt');
   await fs.writeFile(publicationTextPath, publicationText(plan));
 
@@ -77,6 +89,6 @@ export async function runPipeline(): Promise<GenerationResult> {
   };
   await fs.writeFile(path.join(jobDir, 'result.json'), JSON.stringify(result, null, 2));
   await cleanupOldJobs();
-  console.log(`[${id}] Pacote de publicação concluído: ${videoPath}`);
+  console.log(`[${id}] Pacote profissional concluído: ${videoPath}`);
   return result;
 }
