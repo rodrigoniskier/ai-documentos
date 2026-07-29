@@ -6,6 +6,7 @@ import {promisify} from 'node:util';
 import type {Shot, VideoPlan} from './types.js';
 
 const execFileAsync = promisify(execFile);
+const boldFont = '/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf';
 
 async function audioDurationSeconds(audioPath: string): Promise<number> {
   const {stdout} = await execFileAsync('ffprobe', [
@@ -30,6 +31,23 @@ function assText(value: string): string {
 
 function ffmpegFilterPath(value: string): string {
   return value.replace(/\\/g, '/').replace(/:/g, '\\:').replace(/'/g, "'\\''");
+}
+
+function wrapText(value: string, maxCharacters = 24): string {
+  const words = value.replace(/\s+/g, ' ').trim().split(' ');
+  const lines: string[] = [];
+  let current = '';
+  for (const word of words) {
+    const candidate = current ? `${current} ${word}` : word;
+    if (candidate.length > maxCharacters && current) {
+      lines.push(current);
+      current = word;
+    } else {
+      current = candidate;
+    }
+  }
+  if (current) lines.push(current);
+  return lines.slice(0, 4).join('\n');
 }
 
 export async function renderVideo(jobDir: string, plan: VideoPlan, shots: Record<Shot, string>, audioPath: string): Promise<string> {
@@ -87,5 +105,25 @@ export async function renderVideo(jobDir: string, plan: VideoPlan, shots: Record
     '-c:v', 'libx264', '-preset', 'medium', '-crf', '19', '-pix_fmt', 'yuv420p',
     '-c:a', 'aac', '-b:a', '192k', '-movflags', '+faststart', output,
   ], {maxBuffer: 30 * 1024 * 1024});
+  return output;
+}
+
+export async function renderThumbnail(jobDir: string, plan: VideoPlan, shots: Record<Shot, string>): Promise<string> {
+  const titleFile = path.join(jobDir, 'thumbnail-title.txt');
+  await fs.writeFile(titleFile, wrapText(plan.hook || plan.title));
+  const source = path.join(jobDir, shots.formulario || shots.inicio);
+  const output = path.join(jobDir, 'thumbnail.jpg');
+  const filter = [
+    'scale=1280:720:force_original_aspect_ratio=increase',
+    'crop=1280:720',
+    'drawbox=x=0:y=0:w=1280:h=720:color=0x071c3b@0.58:t=fill',
+    'drawbox=x=60:y=48:w=560:h=66:color=0xFFD21F@1:t=fill',
+    `drawtext=fontfile=${boldFont}:text='AI LAB RODRIGO NISKIER':fontcolor=0x071c3b:fontsize=29:x=82:y=66`,
+    `drawtext=fontfile=${boldFont}:textfile='${ffmpegFilterPath(titleFile)}':fontcolor=white:fontsize=66:line_spacing=18:x=72:y=(h-text_h)/2:shadowcolor=black@0.7:shadowx=4:shadowy=4`,
+    `drawtext=fontfile=${boldFont}:text='PROCESSOS INTELIGENTES':fontcolor=0xFFD21F:fontsize=30:x=72:y=h-74`,
+  ].join(',');
+  await execFileAsync('ffmpeg', [
+    '-y', '-i', source, '-vf', filter, '-frames:v', '1', '-q:v', '2', output,
+  ], {maxBuffer: 20 * 1024 * 1024});
   return output;
 }
