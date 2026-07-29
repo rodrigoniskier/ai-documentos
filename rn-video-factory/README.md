@@ -6,8 +6,12 @@ Fábrica automatizada para produzir vídeos verticais de demonstração de proce
 2. narração em português brasileiro com `gpt-4o-mini-tts` e voz `marin`;
 3. captura automática das telas com Playwright;
 4. montagem vertical 1080 × 1920 com FFmpeg;
-5. exportação MP4 com legendas e identidade visual;
-6. publicação no canal autorizado pela YouTube Data API.
+5. geração de miniatura horizontal;
+6. criação de título, descrição, hashtags e tags;
+7. disponibilização de todos os arquivos em um painel protegido;
+8. abertura direta do YouTube Studio para publicação manual assistida.
+
+Não utiliza Google Cloud, OAuth nem YouTube Data API.
 
 ## Implantação
 
@@ -18,38 +22,31 @@ O projeto está preparado como subdiretório de um monorepo. No Render, use o Bl
 - **Plano recomendado:** Standard, devido ao Chromium e à renderização de vídeo
 - **Disco persistente:** `/data`, 10 GB
 
-## Configuração inicial
+## Configuração obrigatória
 
-No fluxo de criação pelo Blueprint, informe somente:
+No Render, a única credencial externa obrigatória é:
 
-- `OPENAI_API_KEY`.
+- `OPENAI_API_KEY`
 
-O `ADMIN_TOKEN` é gerado automaticamente. A URL pública e o endereço de retorno do YouTube são derivados automaticamente do hostname fornecido pelo Render.
+O `ADMIN_TOKEN` é gerado automaticamente pelo Blueprint e protege o painel, as rotas de geração e os downloads.
 
-Depois que o serviço estiver no ar, adicione em **Environment**:
-
-- `GOOGLE_CLIENT_ID`;
-- `GOOGLE_CLIENT_SECRET`.
-
-O endereço autorizado no Google será:
-
-```text
-https://SEU-SERVICO.onrender.com/youtube/callback
-```
-
-`PUBLIC_BASE_URL` e `GOOGLE_REDIRECT_URI` continuam aceitas como sobrescritas opcionais, mas não são necessárias no deploy padrão do Render.
-
-## Primeira publicação
+## Uso do painel
 
 1. Abra a URL do serviço.
-2. Clique em **Conectar YouTube** e autorize o canal uma única vez.
-3. Insira o `ADMIN_TOKEN` e clique em **Gerar e publicar agora**.
-
-O projeto OAuth do Google precisa ter a YouTube Data API v3 ativada. Projetos de API ainda não auditados pelo Google podem ter uploads forçados para privado, mesmo quando `YOUTUBE_PRIVACY_STATUS=public`.
+2. Copie o `ADMIN_TOKEN` no painel Environment do Render.
+3. Cole o token na tela do RN Video Factory e clique em **Acessar painel**.
+4. Aguarde a produção diária ou clique em **Gerar novo vídeo agora**.
+5. Baixe:
+   - vídeo MP4;
+   - miniatura JPG;
+   - texto completo de publicação;
+   - plano editorial JSON.
+6. Use os botões de cópia para título, descrição e tags.
+7. Clique em **Abrir YouTube Studio** e publique no canal `AI LAB Rodrigo Niskier`.
 
 ## Produção diária
 
-Após a primeira publicação, altere:
+O Blueprint deixa a rotina ativada para 08h00 no fuso `America/Recife`:
 
 ```env
 DAILY_ENABLED=true
@@ -58,11 +55,12 @@ DAILY_MINUTE=0
 TZ=America/Recife
 ```
 
-O próprio serviço agenda a próxima produção e mantém o token do YouTube no disco persistente.
+A produção permanece no disco persistente. Por padrão, os 30 pacotes mais recentes são mantidos e os mais antigos são removidos automaticamente.
 
 ## Segurança
 
 - credenciais ficam somente nas variáveis de ambiente do Render;
-- o token OAuth é armazenado em `/data/youtube-token.json` com permissão restrita;
-- a rota de produção exige `ADMIN_TOKEN`;
-- nenhuma questão é enviada ao sistema demonstrado; a automação apenas navega até o formulário.
+- o painel administrativo e todos os downloads exigem `ADMIN_TOKEN`;
+- os arquivos permanecem no disco persistente privado do serviço;
+- nenhuma questão é enviada ao sistema demonstrado; a automação apenas navega até o formulário;
+- não existe acesso ao canal do YouTube nem armazenamento de credenciais do Google.
