@@ -2,6 +2,18 @@
 
 Plataforma comercial Django da RN Content Lab para professores do ensino superior gerarem Planos de Ensino personalizados em DOCX a partir de dados e fontes institucionais.
 
+## Problema, público e resultado
+
+**Problema.** Montar um Plano de Ensino exige combinar dados da instituição, do curso e da disciplina em um documento DOCX no padrão institucional, uma tarefa repetitiva a cada período.
+
+**Para quem.** Professores do ensino superior que precisam produzir Planos de Ensino personalizados a partir de dados e fontes institucionais.
+
+**O que entrega.** Cadastro de instituição, curso e disciplina; envio privado de fontes em PDF e DOCX; geração estruturada pela OpenAI Responses API; DOCX com download protegido; histórico de documentos; planos Gratuito, Pro e Ultra com créditos e assinatura recorrente via Asaas, ativada por webhook autenticado e idempotente.
+
+**Tecnologias.** Python, Django, PostgreSQL, SQL, OpenAI API, Cloudflare R2, Render, Asaas, n8n, GitHub Actions.
+
+**Qualidade e evidências.** 61 funções de teste automatizadas; dois workflows de GitHub Actions; comandos de validação (`check`, `makemigrations --check`, `test`) descritos abaixo.
+
 ## Recursos
 
 - cadastro público por e-mail, sem código de convite;
