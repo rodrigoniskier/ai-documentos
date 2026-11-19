@@ -12,7 +12,7 @@ Plataforma comercial Django da RN Content Lab para professores do ensino superio
 
 **Tecnologias.** Python, Django, PostgreSQL, SQL, OpenAI API, Cloudflare R2, Render, Asaas, n8n, GitHub Actions.
 
-**Qualidade e evidências.** 61 funções de teste automatizadas; dois workflows de GitHub Actions; comandos de validação (`check`, `makemigrations --check`, `test`) descritos abaixo.
+**Qualidade e evidências.** 61 funções de teste automatizadas; dois workflows de GitHub Actions; comandos de validação (`check`, `makemigrations --check`, `test`) descritos abaixo. Licença MIT.
 
 ## Recursos
 
